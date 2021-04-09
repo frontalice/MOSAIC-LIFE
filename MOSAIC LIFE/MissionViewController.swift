@@ -37,7 +37,13 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         
         // リスト情報をmissionMemoryから読み込み
         if userDefaults.object(forKey: "missionMemory") != nil {
-            self.missionList = userDefaults.array(forKey: "missionMemory") as! Array<(String, Int)>
+            if let dicList = userDefaults.object(forKey: "missionMemory") as? [[String: Any]] {
+                print(dicList)
+                self.missionList = dicList.map{(mission: $0["mission"] as! String, pt: $0["pt"] as! Int)}
+//                print(tupleList)
+//                tupleList = self.missionList
+                print(missionList)
+            }
         } else {
             //リストが空欄の場合、テスト用Missionを追加
             missionList.append(("ポイントを100獲得", 100))
@@ -70,8 +76,10 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         exchangedPtHistory.removeAll()
 //        print("History Cleared")
         //リスト情報の保存
-        userDefaults.set(missionList, forKey: "missionMemory")
-        // これだと保存に失敗してるのでCodableを使う必要がある
+        print(missionList)
+        let convertedList: [[String: Any]] = missionList.map{["mission": $0.mission, "pt": $0.pt]}
+        print(convertedList)
+        userDefaults.set(convertedList, forKey: "missionMemory")
 
     }
     
