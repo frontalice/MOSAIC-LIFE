@@ -125,9 +125,13 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             let missionTf = alert.textFields![0]
             let ptTf = alert.textFields![1]
             if let missionText = missionTf.text, let ptText = ptTf.text {
-                self.addMission(missionText, Int(ptText)!)
+                if let ptInt = Int(ptText) {
+                    self.addMission(missionText, ptInt)
+                } else {
+                    self.showAlert("ptに文字を入れるな")
+                }
             } else {
-                print("error at MissionAdding")
+                self.showAlert("追加に失敗しました")
             }
         }
         
@@ -142,6 +146,14 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         missionList.append((mission, pt))
         // TableViewに追加
         tableView.reloadData()
+    }
+    
+    //エラー表示
+    func showAlert(_ message: String){
+        let alert : UIAlertController = UIAlertController(title: "警告", message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "はい", style: .default, handler: nil)
+        alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
     }
     
     // セルをタップでポイント獲得

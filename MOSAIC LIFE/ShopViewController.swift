@@ -121,9 +121,13 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             let itemTf = alert.textFields![0]
             let ptTf = alert.textFields![1]
             if let itemText = itemTf.text, let ptText = ptTf.text {
-                self.addItem(itemText, Int(ptText)!)
+                if let ptInt = Int(ptText) {
+                    self.addItem(itemText, ptInt)
+                } else {
+                    self.showAlert("ptに文字を入れるな")
+                }
             } else {
-                print("error at ItemAdding")
+                self.showAlert("追加に失敗しました")
             }
         }
         
@@ -138,6 +142,14 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         shopList.append((item, pt))
         // TableViewに追加
         tableView.reloadData()
+    }
+    
+    //エラー表示
+    func showAlert(_ message: String){
+        let alert : UIAlertController = UIAlertController(title: "警告", message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "はい", style: .default, handler: nil)
+        alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
     }
     
     //セルをタップでポイント消費
