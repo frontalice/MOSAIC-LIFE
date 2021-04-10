@@ -13,19 +13,26 @@ class ViewController: UIViewController,UITextFieldDelegate {
     var gotPointArray = Array<Int>()
     var usedPointArray = Array<Int>()
     
+    // 起動時処理
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
+        //レイアウト読み込み
         pointLabel.layer.borderWidth = 2.0
         pointLabel.layer.borderColor = UIColor.black.cgColor
         debugLog.layer.borderWidth = 1.0
         debugLog.layer.borderColor = UIColor.black.cgColor
         
-        //テスト用：起動毎に初期化
-        settings.removeObject(forKey: "storePoints")
-        settings.removeObject(forKey: "storeTickets")
+        //残pt・チケット読み込み
+        pointLabel.text = String(roadPoints())
+        ticketLabel.text = String(roadTickets())
         
-        settings.register(defaults: ["storePoints":0, "storeTickets":0])
+        //テスト用：起動毎に初期化
+//        settings.removeObject(forKey: "storePoints")
+//        settings.removeObject(forKey: "storeTickets")
+        
+//        settings.register(defaults: ["storePoints":0, "storeTickets":0])
         // テスト中なのでポイントは起動毎に初期化します
 //        pointLabel.text = String(roadPoints())
 //        ticketLabel.text = String(roadTickets())
@@ -68,16 +75,28 @@ class ViewController: UIViewController,UITextFieldDelegate {
     @IBOutlet weak var debugLog: UITextView!
     
     func roadPoints() -> Int {
+        if settings.object(forKey: "storePoints") != nil {
+            let roadPoint : Int = settings.integer(forKey: "storePoints")
+            return roadPoint
+        }
+        settings.set(0, forKey: "storePoints")
         let roadPoint : Int = settings.integer(forKey: "storePoints")
         return roadPoint
     }
     
     func roadTickets() -> Int {
+        if settings.object(forKey: "storeTickets") != nil {
+            let roadTicket : Int =
+                settings.integer(forKey: "storeTickets")
+            return roadTicket
+        }
+        settings.set(0, forKey: "storeTickets")
         let roadTicket : Int =
             settings.integer(forKey: "storeTickets")
         return roadTicket
     }
     
+    // デバッグフィールド入力完了時の処理
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         textField.endEditing(true)
