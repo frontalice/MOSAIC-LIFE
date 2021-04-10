@@ -38,11 +38,9 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         // リスト情報をmissionMemoryから読み込み
         if userDefaults.object(forKey: "missionMemory") != nil {
             if let dicList = userDefaults.object(forKey: "missionMemory") as? [[String: Any]] {
-                print(dicList)
+//                print(dicList)
                 self.missionList = dicList.map{(mission: $0["mission"] as! String, pt: $0["pt"] as! Int)}
-//                print(tupleList)
-//                tupleList = self.missionList
-                print(missionList)
+//                print(missionList)
             }
         } else {
             //リストが空欄の場合、テスト用Missionを追加
@@ -70,15 +68,15 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         let vc = nvc.viewControllers[0] as! ViewController
         for element in exchangedPtHistory {
             vc.gotPointArray.append(element)
-            print(element)
+//            print(element)
         }
         //ptHistoryの初期化
         exchangedPtHistory.removeAll()
 //        print("History Cleared")
         //リスト情報の保存
-        print(missionList)
+//        print(missionList)
         let convertedList: [[String: Any]] = missionList.map{["mission": $0.mission, "pt": $0.pt]}
-        print(convertedList)
+//        print(convertedList)
         userDefaults.set(convertedList, forKey: "missionMemory")
 
     }
