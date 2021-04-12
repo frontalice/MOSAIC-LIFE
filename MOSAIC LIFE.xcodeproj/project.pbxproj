@@ -13,6 +13,8 @@
 		A842C607260888C10001750A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A842C605260888C10001750A /* Main.storyboard */; };
 		A842C609260888C60001750A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A842C608260888C60001750A /* Assets.xcassets */; };
 		A842C60C260888C60001750A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A842C60A260888C60001750A /* LaunchScreen.storyboard */; };
+		A842C6152608C9F70001750A /* ShopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C6142608C9F70001750A /* ShopViewController.swift */; };
+		A842C6182608CA0B0001750A /* MissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C6172608CA0B0001750A /* MissionViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +26,8 @@
 		A842C608260888C60001750A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A842C60B260888C60001750A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A842C60D260888C60001750A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A842C6142608C9F70001750A /* ShopViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopViewController.swift; sourceTree = "<group>"; };
+		A842C6172608CA0B0001750A /* MissionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +63,8 @@
 				A842C5FF260888C10001750A /* AppDelegate.swift */,
 				A842C601260888C10001750A /* SceneDelegate.swift */,
 				A842C603260888C10001750A /* ViewController.swift */,
+				A842C6142608C9F70001750A /* ShopViewController.swift */,
+				A842C6172608CA0B0001750A /* MissionViewController.swift */,
 				A842C605260888C10001750A /* Main.storyboard */,
 				A842C608260888C60001750A /* Assets.xcassets */,
 				A842C60A260888C60001750A /* LaunchScreen.storyboard */,
@@ -137,9 +143,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A842C6152608C9F70001750A /* ShopViewController.swift in Sources */,
 				A842C604260888C10001750A /* ViewController.swift in Sources */,
 				A842C600260888C10001750A /* AppDelegate.swift in Sources */,
 				A842C602260888C10001750A /* SceneDelegate.swift in Sources */,
+				A842C6182608CA0B0001750A /* MissionViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,6 +297,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = Q9SQBB7T47;
 				INFOPLIST_FILE = "MOSAIC LIFE/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -308,6 +317,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = Q9SQBB7T47;
 				INFOPLIST_FILE = "MOSAIC LIFE/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
