@@ -33,7 +33,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         
         // +とEditボタン追加
         let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
-        navigationItem.rightBarButtonItems = [editButtonItem, addButton]
+        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
+        navigationItem.rightBarButtonItems = [editButtonItem, addButton, sortButton]
         
         // リスト情報をmissionMemoryから読み込み
         if userDefaults.object(forKey: "missionMemory") != nil {
@@ -140,6 +141,13 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         present(alert, animated: true, completion: nil)
     }
     
+    @objc func sortButtonTapped(_ sender: UIBarButtonItem){
+        missionList.sort{(A,B) -> Bool in
+            return A.pt > B.pt
+        }
+        self.tableView.reloadData()
+    }
+    
     //ミッションを追加: リストに追加
     func addMission(_ mission:String, _ pt:Int){
         // missionListに追加
@@ -169,7 +177,35 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             exchangedPtHistory.append(missionPoint)
         } else {
             // 編集モード時にタップしたらミッション名やポイントを変更できるようにする
-            print("editing now")
+//            print("editing now")
+            let alert = UIAlertController(title: "Todoの編集", message: "ToDo名と報酬ptの編集", preferredStyle: .alert)
+            alert.addTextField { (mission: UITextField) -> Void in
+                mission.placeholder = "Mission Name"
+                mission.text = self.missionList[indexPath.row].mission
+            }
+            alert.addTextField { (pt: UITextField) -> Void in
+                pt.placeholder = "Points"
+                pt.text = String(self.missionList[indexPath.row].pt)
+            }
+            var alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
+                let missionTf = alert.textFields![0]
+                let ptTf = alert.textFields![1]
+                if let missionText = missionTf.text, let ptText = ptTf.text {
+                    if let ptInt = Int(ptText) {
+                        self.missionList[indexPath.row].mission = missionText
+                        self.missionList[indexPath.row].pt = ptInt
+                        self.tableView.reloadData()
+                    } else {
+                        self.showAlert("ptに文字を入れるな")
+                    }
+                } else {
+                    self.showAlert("追加に失敗しました")
+                }
+            }
+            
+            alert.addAction(alertAction)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            present(alert, animated: true, completion: nil)
         }
         
     }
