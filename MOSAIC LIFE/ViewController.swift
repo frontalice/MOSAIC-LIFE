@@ -4,6 +4,7 @@
 //
 //  Created by Toshiki Hanakawa on 2021/03/22.
 //
+// いぇーい見てる－？
 
 import UIKit
 
@@ -12,7 +13,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
     let settings = UserDefaults.standard
     var gotPointArray = Array<Int>()
     var usedPointArray = Array<Int>()
-    
+
     // 起動時処理
     override func viewDidLoad() {
         super.viewDidLoad()
