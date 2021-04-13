@@ -10,19 +10,30 @@ import UIKit
 class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
     let userDefaults = UserDefaults.standard
-    var missionList = [(mission: String, pt: Int)]()
+    var missionLists: [(missionList: [(mission: String, pt: Int)], listName: String)] = [([("ポイントを100獲得", 100)],"TestSection")]
+//    var missionList = [(mission: String, pt: Int)]()
     var exchangedPtHistory = Array<Int>()
     
-    //リストは何行？
+    //セクション数
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return missionLists.count
+    }
+    
+    //セクション内のセルはいくつ？
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return missionList.count
+        return missionLists[section].missionList.count
+    }
+    
+    //セクション名
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return missionLists[section].listName
     }
     
     //セルの生成
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .value1, reuseIdentifier: "")
-        cell.textLabel?.text = missionList[indexPath.row].mission
-        cell.detailTextLabel?.text = String(missionList[indexPath.row].pt)
+        cell.textLabel?.text = missionLists[indexPath.section].missionList[indexPath.row].mission
+        cell.detailTextLabel?.text = String(missionLists[indexPath.section].missionList[indexPath.row].pt)
         return cell
     }
     
@@ -37,18 +48,21 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         navigationItem.rightBarButtonItems = [editButtonItem, addButton, sortButton]
         
         // リスト情報をmissionMemoryから読み込み
-        if userDefaults.object(forKey: "missionMemory") != nil {
-            if let dicList = userDefaults.object(forKey: "missionMemory") as? [[String: Any]] {
-//                print(dicList)
-                self.missionList = dicList.map{(mission: $0["mission"] as! String, pt: $0["pt"] as! Int)}
-//                print(missionList)
+        for i in 0..<missionLists.count {
+            if userDefaults.object(forKey: "missionMemory\(String(i))") != nil {
+                if let dicList = userDefaults.object(forKey: "missionMemory\(String(i))") as? [[String: Any]] {
+    //                print(dicList)
+                    self.missionLists[i].missionList = dicList.map{(mission: $0["mission"] as! String, pt: $0["pt"] as! Int)}
+    //                print(missionList)
+                }
+            } else {
+                //保存データが無い場合、テスト用Missionを追加
+                missionLists[i].missionList.append(("ポイントを100獲得", 100))
+                missionLists[i].missionList.append(("ポイントを50獲得", 50))
             }
-        } else {
-            //リストが空欄の場合、テスト用Missionを追加
-            missionList.append(("ポイントを100獲得", 100))
-            missionList.append(("ポイントを50獲得", 50))
-            tableView.reloadData()
         }
+        
+        tableView.reloadData()
         
         //編集中でもセルを選択できるようにする
         self.tableView.allowsSelectionDuringEditing = true
@@ -75,11 +89,12 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         exchangedPtHistory.removeAll()
 //        print("History Cleared")
         //リスト情報の保存
-//        print(missionList)
-        let convertedList: [[String: Any]] = missionList.map{["mission": $0.mission, "pt": $0.pt]}
-//        print(convertedList)
-        userDefaults.set(convertedList, forKey: "missionMemory")
-
+        for i in 0..<missionLists.count {
+//            print(missionList)
+            let convertedList: [[String: Any]] = missionLists[i].missionList.map{["mission": $0.mission, "pt": $0.pt]}
+//            print(convertedList)
+            userDefaults.set(convertedList, forKey: "missionMemory\(String(i))")
+        }
     }
     
     /*
@@ -109,7 +124,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     
     //セル削除時の処理
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        missionList.remove(at: indexPath.row)
+        missionLists[indexPath.section].missionList.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.automatic)
     }
     
@@ -142,8 +157,10 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     }
     
     @objc func sortButtonTapped(_ sender: UIBarButtonItem){
-        missionList.sort{(A,B) -> Bool in
-            return A.pt > B.pt
+        for i in 0..<missionLists.count {
+            missionLists[i].missionList.sort{(A,B) -> Bool in
+                return A.pt > B.pt
+            }
         }
         self.tableView.reloadData()
     }
@@ -151,7 +168,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     //ミッションを追加: リストに追加
     func addMission(_ mission:String, _ pt:Int){
         // missionListに追加
-        missionList.append((mission, pt))
+        missionLists[0].missionList.append((mission, pt))
         // TableViewに追加
         tableView.reloadData()
     }
@@ -169,7 +186,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         if !self.tableView.isEditing {
             let setting = UserDefaults.standard
             var presentPoint: Int = setting.integer(forKey: "storePoints")
-            let missionPoint: Int = missionList[indexPath.row].pt
+            let missionPoint: Int = missionLists[indexPath.section].missionList[indexPath.row].pt
             presentPoint += missionPoint
             setting.set(presentPoint, forKey: "storePoints")
             setting.synchronize()
@@ -181,19 +198,19 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             let alert = UIAlertController(title: "Todoの編集", message: "ToDo名と報酬ptの編集", preferredStyle: .alert)
             alert.addTextField { (mission: UITextField) -> Void in
                 mission.placeholder = "Mission Name"
-                mission.text = self.missionList[indexPath.row].mission
+                mission.text = self.missionLists[indexPath.section].missionList[indexPath.row].mission
             }
             alert.addTextField { (pt: UITextField) -> Void in
                 pt.placeholder = "Points"
-                pt.text = String(self.missionList[indexPath.row].pt)
+                pt.text = String(self.missionLists[indexPath.section].missionList[indexPath.row].pt)
             }
             var alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
                 let missionTf = alert.textFields![0]
                 let ptTf = alert.textFields![1]
                 if let missionText = missionTf.text, let ptText = ptTf.text {
                     if let ptInt = Int(ptText) {
-                        self.missionList[indexPath.row].mission = missionText
-                        self.missionList[indexPath.row].pt = ptInt
+                        self.missionLists[indexPath.section].missionList[indexPath.row].mission = missionText
+                        self.missionLists[indexPath.section].missionList[indexPath.row].pt = ptInt
                         self.tableView.reloadData()
                     } else {
                         self.showAlert("ptに文字を入れるな")
