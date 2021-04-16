@@ -33,7 +33,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         
         // +とEditボタン追加
         let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
-        navigationItem.rightBarButtonItems = [editButtonItem, addButton]
+        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
+        navigationItem.rightBarButtonItems = [editButtonItem, addButton, sortButton]
         
         // リスト情報をshopMemoryから読み込み
         if userDefaults.object(forKey: "shopMemory") != nil {
@@ -136,6 +137,14 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         present(alert, animated: true, completion: nil)
     }
     
+    // ソートボタン: 降順で並び替え
+    @objc func sortButtonTapped(_ sender: UIBarButtonItem){
+        shopList.sort{(A,B) -> Bool in
+            return A.pt > B.pt
+        }
+        self.tableView.reloadData()
+    }
+    
     //アイテムを追加: リストに追加
     func addItem(_ item:String, _ pt:Int){
         // shopListに追加
@@ -168,7 +177,35 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             consumedPtHistory.append(consumePoint)
         } else {
             // 編集モード時にタップしたらミッション名やポイントを変更できるようにする
-            print("editing now")
+//            print("editing now")
+            let alert = UIAlertController(title: "Itemの編集", message: "Item名と消費ptの編集", preferredStyle: .alert)
+            alert.addTextField { (mission: UITextField) -> Void in
+                mission.placeholder = "Item Name"
+                mission.text = self.shopList[indexPath.row].item
+            }
+            alert.addTextField { (pt: UITextField) -> Void in
+                pt.placeholder = "Points"
+                pt.text = String(self.shopList[indexPath.row].pt)
+            }
+            var alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
+                let itemTf = alert.textFields![0]
+                let ptTf = alert.textFields![1]
+                if let itemText = itemTf.text, let ptText = ptTf.text {
+                    if let ptInt = Int(ptText) {
+                        self.shopList[indexPath.row].item = itemText
+                        self.shopList[indexPath.row].pt = ptInt
+                        self.tableView.reloadData()
+                    } else {
+                        self.showAlert("ptに文字を入れるな")
+                    }
+                } else {
+                    self.showAlert("追加に失敗しました")
+                }
+            }
+            
+            alert.addAction(alertAction)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            present(alert, animated: true, completion: nil)
         }
         
     }
