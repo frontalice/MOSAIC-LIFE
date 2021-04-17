@@ -7,13 +7,16 @@
 
 import UIKit
 
-class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
+class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDataSource,UIPickerViewDelegate, UIPickerViewDataSource {
+    
+    //MARK: - 保存データ関連
     
     let userDefaults = UserDefaults.standard
     var missionLists: [(missionList: [(mission: String, pt: Int)], listName: String)] = [([("ポイントを100獲得", 100)],"TestSection")]
 //    var missionList = [(mission: String, pt: Int)]()
     var exchangedPtHistory = Array<Int>()
     
+    //MARK: - TableView関連
     //セクション数
     func numberOfSections(in tableView: UITableView) -> Int {
         return missionLists.count
@@ -37,6 +40,110 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         return cell
     }
     
+    //Editタップ時編集モードへ
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super .setEditing(editing, animated: true)
+        self.tableView.setEditing(editing, animated: true)
+    }
+    
+    //全セルが削除対象
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    //セル削除時の処理
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        missionLists[indexPath.section].missionList.remove(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.automatic)
+    }
+    
+    // isEditing = false: セルをタップでポイント獲得
+    // isEditing = true:  既存セルの編集
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if !self.tableView.isEditing {
+            let setting = UserDefaults.standard
+            var presentPoint: Int = setting.integer(forKey: "storePoints")
+            let missionPoint: Int = missionLists[indexPath.section].missionList[indexPath.row].pt
+            presentPoint += missionPoint
+            setting.set(presentPoint, forKey: "storePoints")
+            setting.synchronize()
+            pointLabel.text = String(presentPoint)
+            exchangedPtHistory.append(missionPoint)
+        } else {
+            // 編集モード時にタップしたらミッション名やポイントを変更できるようにする
+//            print("editing now")
+            let alert = UIAlertController(title: "Todoの編集", message: "ToDo名と報酬ptの編集", preferredStyle: .alert)
+            alert.addTextField { (mission: UITextField) -> Void in
+                mission.placeholder = "Mission Name"
+                mission.text = self.missionLists[indexPath.section].missionList[indexPath.row].mission
+            }
+            alert.addTextField { (pt: UITextField) -> Void in
+                pt.placeholder = "Points"
+                pt.text = String(self.missionLists[indexPath.section].missionList[indexPath.row].pt)
+            }
+            var alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
+                let missionTf = alert.textFields![0]
+                let ptTf = alert.textFields![1]
+                if let missionText = missionTf.text, let ptText = ptTf.text {
+                    if let ptInt = Int(ptText) {
+                        self.missionLists[indexPath.section].missionList[indexPath.row].mission = missionText
+                        self.missionLists[indexPath.section].missionList[indexPath.row].pt = ptInt
+                        self.tableView.reloadData()
+                    } else {
+                        self.showAlert("ptに文字を入れるな")
+                    }
+                } else {
+                    self.showAlert("追加に失敗しました")
+                }
+            }
+            
+            alert.addAction(alertAction)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            present(alert, animated: true, completion: nil)
+        }
+        
+    }
+    
+    //ミッションを追加: リストに追加
+    func addMission(_ mission:String, _ pt:Int, _ section:Int){
+        // missionListに追加
+        missionLists[section].missionList.append((mission, pt))
+        // TableViewに追加
+        tableView.reloadData()
+    }
+    
+    //MARK: - PickerView関連
+    //pickerView: 何行？
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return missionLists.count
+    }
+    
+    //pickerView: 何列？
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    //pickerView: 表示データ
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return missionLists[row].listName
+    }
+    
+    var selectedSectionIndex: Int = 0
+    
+    //pickerView: データ選択時の挙動
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        missionAddAlert.textFields![2].text = missionLists[row].listName
+        selectedSectionIndex = row
+        print(missionAddAlert.textFields![2].text!)
+    }
+    
+    var editingTextField: UITextField = UITextField()
+    
+    //pickerView: Doneボタン押すとキーボードしまう
+    @objc func doneButtonOnToolBarTapped(_ sender: UIBarButtonItem){
+        editingTextField.endEditing(true)
+    }
+    //MARK: - ライフサイクル
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -96,53 +203,51 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             userDefaults.set(convertedList, forKey: "missionMemory\(String(i))")
         }
     }
-    
-    /*
-    // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
+    //MARK: - StoryBoard
     @IBOutlet weak var pointLabel: UILabel!
     @IBOutlet weak var ticketLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
     
-    //Editタップ時編集モードへ
-    override func setEditing(_ editing: Bool, animated: Bool) {
-        super .setEditing(editing, animated: true)
-        self.tableView.setEditing(editing, animated: true)
-    }
-    
-    //全セルが削除対象
-    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    
-    //セル削除時の処理
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        missionLists[indexPath.section].missionList.remove(at: indexPath.row)
-        tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.automatic)
-    }
-    
+    //MARK: - UI部品
     //ミッションを追加: alertで入力
     @objc func plusButtonTapped(_ sender: UIBarButtonItem){
-        let alert = UIAlertController(title: "Todoの追加", message: "ToDo名と報酬ptを入力", preferredStyle: .alert)
-        alert.addTextField { (mission: UITextField) -> Void in
+        missionAddAlert.addTextField { (mission: UITextField) -> Void in
             mission.placeholder = "Mission Name"
         }
-        alert.addTextField { (pt: UITextField) -> Void in
+        missionAddAlert.addTextField { (pt: UITextField) -> Void in
             pt.placeholder = "Points"
         }
-        var alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
-            let missionTf = alert.textFields![0]
-            let ptTf = alert.textFields![1]
+        missionAddAlert.addTextField { (section: UITextField) -> Void in
+            section.placeholder = "Section"
+        }
+        self.editingTextField = missionAddAlert.textFields![2]
+        
+        // missionLists末尾にセクション追加用要素を追加
+//        missionLists.append((missionList: [], listName: "新しいカテゴリを追加"))
+        
+        //pickerViewに関する処理
+        let pickerView = UIPickerView()
+        pickerView.dataSource = self
+        pickerView.delegate = self
+        pickerView.selectRow(0, inComponent: 0, animated: true)
+
+        let toolbar = UIToolbar()
+        let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonOnToolBarTapped(_:)))
+        toolbar.setItems([doneButton], animated: true)
+        toolbar.sizeToFit()
+
+        //pickerViewに関する処理: 実装
+        missionAddAlert.textFields![2].inputAccessoryView = toolbar
+        missionAddAlert.textFields![2].inputView = pickerView
+        
+        //OKボタンを押した時の挙動
+        let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
+            let missionTf = self.missionAddAlert.textFields![0]
+            let ptTf = self.missionAddAlert.textFields![1]
             if let missionText = missionTf.text, let ptText = ptTf.text {
                 if let ptInt = Int(ptText) {
-                    self.addMission(missionText, ptInt)
+                    self.addMission(missionText, ptInt, self.selectedSectionIndex)
                 } else {
                     self.showAlert("ptに文字を入れるな")
                 }
@@ -151,11 +256,12 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             }
         }
         
-        alert.addAction(alertAction)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        present(alert, animated: true, completion: nil)
+        missionAddAlert.addAction(alertAction)
+        missionAddAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(missionAddAlert, animated: true, completion: nil)
     }
     
+    // ソートボタン: 降順で並び替え
     @objc func sortButtonTapped(_ sender: UIBarButtonItem){
         for i in 0..<missionLists.count {
             missionLists[i].missionList.sort{(A,B) -> Bool in
@@ -165,67 +271,14 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         self.tableView.reloadData()
     }
     
-    //ミッションを追加: リストに追加
-    func addMission(_ mission:String, _ pt:Int){
-        // missionListに追加
-        missionLists[0].missionList.append((mission, pt))
-        // TableViewに追加
-        tableView.reloadData()
-    }
+    // アラートパーツ: ミッション追加
+    let missionAddAlert = UIAlertController(title: "Todoの追加", message: "ToDo名と報酬ptを入力", preferredStyle: .alert)
     
-    //エラー表示
+    //　アラート: エラー表示
     func showAlert(_ message: String){
         let alert : UIAlertController = UIAlertController(title: "警告", message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "はい", style: .default, handler: nil)
         alert.addAction(okAction)
         present(alert, animated: true, completion: nil)
     }
-    
-    // セルをタップでポイント獲得
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if !self.tableView.isEditing {
-            let setting = UserDefaults.standard
-            var presentPoint: Int = setting.integer(forKey: "storePoints")
-            let missionPoint: Int = missionLists[indexPath.section].missionList[indexPath.row].pt
-            presentPoint += missionPoint
-            setting.set(presentPoint, forKey: "storePoints")
-            setting.synchronize()
-            pointLabel.text = String(presentPoint)
-            exchangedPtHistory.append(missionPoint)
-        } else {
-            // 編集モード時にタップしたらミッション名やポイントを変更できるようにする
-//            print("editing now")
-            let alert = UIAlertController(title: "Todoの編集", message: "ToDo名と報酬ptの編集", preferredStyle: .alert)
-            alert.addTextField { (mission: UITextField) -> Void in
-                mission.placeholder = "Mission Name"
-                mission.text = self.missionLists[indexPath.section].missionList[indexPath.row].mission
-            }
-            alert.addTextField { (pt: UITextField) -> Void in
-                pt.placeholder = "Points"
-                pt.text = String(self.missionLists[indexPath.section].missionList[indexPath.row].pt)
-            }
-            var alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
-                let missionTf = alert.textFields![0]
-                let ptTf = alert.textFields![1]
-                if let missionText = missionTf.text, let ptText = ptTf.text {
-                    if let ptInt = Int(ptText) {
-                        self.missionLists[indexPath.section].missionList[indexPath.row].mission = missionText
-                        self.missionLists[indexPath.section].missionList[indexPath.row].pt = ptInt
-                        self.tableView.reloadData()
-                    } else {
-                        self.showAlert("ptに文字を入れるな")
-                    }
-                } else {
-                    self.showAlert("追加に失敗しました")
-                }
-            }
-            
-            alert.addAction(alertAction)
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-            present(alert, animated: true, completion: nil)
-        }
-        
-    }
-    
-    
 }

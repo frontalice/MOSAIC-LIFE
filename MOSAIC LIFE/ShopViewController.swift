@@ -187,7 +187,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                 pt.placeholder = "Points"
                 pt.text = String(self.shopList[indexPath.row].pt)
             }
-            var alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
+            let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
                 let itemTf = alert.textFields![0]
                 let ptTf = alert.textFields![1]
                 if let itemText = itemTf.text, let ptText = ptTf.text {
