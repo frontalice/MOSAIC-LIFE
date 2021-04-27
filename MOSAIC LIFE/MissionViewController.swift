@@ -12,7 +12,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     //MARK: - 保存データ関連
     
     let userDefaults = UserDefaults.standard
-    var missionLists: [(missionList: [(mission: String, pt: Int)], listName: String)] = [([("ポイントを100獲得", 100)],"TestSection")]
+    var missionLists: [(missionList: [(mission: String, pt: Int)], listName: String)] = [([("ポイントを獲得", 100)],"TestSection")]
 //    var missionList = [(mission: String, pt: Int)]()
     var exchangedPtHistory = Array<Int>()
     
@@ -55,6 +55,10 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         missionLists[indexPath.section].missionList.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.automatic)
+        if missionLists[indexPath.section].missionList.count == 0 {
+            missionLists.remove(at: indexPath.section)
+            tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
+        }
     }
     
     // isEditing = false: セルをタップでポイント獲得
@@ -134,7 +138,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         missionAddAlert.textFields![2].text = missionLists[row].listName
         selectedSectionIndex = row
-        print(missionAddAlert.textFields![2].text!)
     }
     
     var editingTextField: UITextField = UITextField()
@@ -155,17 +158,28 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         navigationItem.rightBarButtonItems = [editButtonItem, addButton, sortButton]
         
         // リスト情報をmissionMemoryから読み込み
-        for i in 0..<missionLists.count {
+        let categoryCount: Int = userDefaults.integer(forKey: "categoryCount")
+        print("CategoryCount: \(categoryCount)")
+        for i in 0..<categoryCount {
             if userDefaults.object(forKey: "missionMemory\(String(i))") != nil {
                 if let dicList = userDefaults.object(forKey: "missionMemory\(String(i))") as? [[String: Any]] {
     //                print(dicList)
+                    // FIXME: ここ治す
+                    // 初期化したmissionListsにはmissionLists[1]以降が無いので都度追加
+                    if i > 0 {
+                        self.missionLists.append((missionList: [], listName: ""))
+                    }
                     self.missionLists[i].missionList = dicList.map{(mission: $0["mission"] as! String, pt: $0["pt"] as! Int)}
+                    if let listName = userDefaults.string(forKey: "categoryName\(String(i))") {
+                        self.missionLists[i].listName = listName
+                    } else {
+                        continue
+                    }
     //                print(missionList)
                 }
             } else {
-                //保存データが無い場合、テスト用Missionを追加
-                missionLists[i].missionList.append(("ポイントを100獲得", 100))
-                missionLists[i].missionList.append(("ポイントを50獲得", 50))
+                //保存データが無い場合、アラート表示
+                showAlert("データの読み込みに失敗しています")
             }
         }
         
@@ -201,7 +215,11 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             let convertedList: [[String: Any]] = missionLists[i].missionList.map{["mission": $0.mission, "pt": $0.pt]}
 //            print(convertedList)
             userDefaults.set(convertedList, forKey: "missionMemory\(String(i))")
+            userDefaults.set(missionLists[i].listName, forKey: "categoryName\(String(i))")
+            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("missionMemory") })
+            print("----------------------\n")
         }
+        userDefaults.set(missionLists.count, forKey: "categoryCount")
     }
 
     //MARK: - StoryBoard
@@ -224,7 +242,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         self.editingTextField = missionAddAlert.textFields![2]
         
         // missionLists末尾にセクション追加用要素を追加
-//        missionLists.append((missionList: [], listName: "新しいカテゴリを追加"))
+        missionLists.append((missionList: [], listName: "新しいカテゴリを追加"))
         
         //pickerViewに関する処理
         let pickerView = UIPickerView()
@@ -245,9 +263,18 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
             let missionTf = self.missionAddAlert.textFields![0]
             let ptTf = self.missionAddAlert.textFields![1]
+            let sectionTf = self.missionAddAlert.textFields![2]
+            
             if let missionText = missionTf.text, let ptText = ptTf.text {
                 if let ptInt = Int(ptText) {
-                    self.addMission(missionText, ptInt, self.selectedSectionIndex)
+                    if sectionTf.text != "新しいカテゴリを追加" {
+                        //既存のカテゴリに追加 -> そのまま
+                        self.missionLists.removeLast()
+                        self.addMission(missionText, ptInt, self.selectedSectionIndex)
+                    } else {
+                        //カテゴリを新しく作成してから追加
+                        self.createCategory(missionText, ptInt)
+                    }
                 } else {
                     self.showAlert("ptに文字を入れるな")
                 }
@@ -279,6 +306,27 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         let alert : UIAlertController = UIAlertController(title: "警告", message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "はい", style: .default, handler: nil)
         alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
+    }
+    
+    // アラート: カテゴリ作成
+    func createCategory(_ mission: String, _ pt: Int) {
+        let alert : UIAlertController = UIAlertController(title: "カテゴリを追加", message: "カテゴリ名を入力", preferredStyle: .alert)
+        alert.addTextField { (category: UITextField) -> Void in
+            category.placeholder = "Category Name"
+        }
+        
+        let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
+            if let categoryText = alert.textFields![0].text {
+                self.missionLists.removeLast()
+                self.missionLists.append((missionList: [(mission, pt)], categoryText))
+                self.tableView.reloadData()
+            } else {
+                self.showAlert("なんか書いてくれ")
+            }
+        }
+        
+        alert.addAction(alertAction)
         present(alert, animated: true, completion: nil)
     }
 }
