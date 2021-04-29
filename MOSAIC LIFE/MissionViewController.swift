@@ -55,6 +55,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         missionLists[indexPath.section].missionList.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.automatic)
+        // セクション内のセル数が0の場合、セクションを消去
         if missionLists[indexPath.section].missionList.count == 0 {
             missionLists.remove(at: indexPath.section)
             tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
@@ -136,7 +137,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     
     //pickerView: データ選択時の挙動
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        missionAddAlert.textFields![2].text = missionLists[row].listName
+        editingTextField.text = missionLists[row].listName
         selectedSectionIndex = row
     }
     
@@ -230,21 +231,23 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     //MARK: - UI部品
     //ミッションを追加: alertで入力
     @objc func plusButtonTapped(_ sender: UIBarButtonItem){
-        missionAddAlert.addTextField { (mission: UITextField) -> Void in
+        let alert = UIAlertController(title: "Todoの追加", message: "ToDo名と報酬ptを入力", preferredStyle: .alert)
+        
+        alert.addTextField { (mission: UITextField) -> Void in
             mission.placeholder = "Mission Name"
         }
-        missionAddAlert.addTextField { (pt: UITextField) -> Void in
+        alert.addTextField { (pt: UITextField) -> Void in
             pt.placeholder = "Points"
         }
-        missionAddAlert.addTextField { (section: UITextField) -> Void in
+        alert.addTextField { (section: UITextField) -> Void in
             section.placeholder = "Section"
         }
-        self.editingTextField = missionAddAlert.textFields![2]
         
         // missionLists末尾にセクション追加用要素を追加
         missionLists.append((missionList: [], listName: "新しいカテゴリを追加"))
         
         //pickerViewに関する処理
+        self.editingTextField = alert.textFields![2]
         let pickerView = UIPickerView()
         pickerView.dataSource = self
         pickerView.delegate = self
@@ -256,14 +259,14 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         toolbar.sizeToFit()
 
         //pickerViewに関する処理: 実装
-        missionAddAlert.textFields![2].inputAccessoryView = toolbar
-        missionAddAlert.textFields![2].inputView = pickerView
+        alert.textFields![2].inputAccessoryView = toolbar
+        alert.textFields![2].inputView = pickerView
         
         //OKボタンを押した時の挙動
         let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
-            let missionTf = self.missionAddAlert.textFields![0]
-            let ptTf = self.missionAddAlert.textFields![1]
-            let sectionTf = self.missionAddAlert.textFields![2]
+            let missionTf = alert.textFields![0]
+            let ptTf = alert.textFields![1]
+            let sectionTf = alert.textFields![2]
             
             if let missionText = missionTf.text, let ptText = ptTf.text {
                 if let ptInt = Int(ptText) {
@@ -283,9 +286,11 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             }
         }
         
-        missionAddAlert.addAction(alertAction)
-        missionAddAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        present(missionAddAlert, animated: true, completion: nil)
+        alert.addAction(alertAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) {(action: UIAlertAction) -> Void in
+            self.missionLists.removeLast()
+        })
+        present(alert, animated: true, completion: nil)
     }
     
     // ソートボタン: 降順で並び替え
@@ -297,9 +302,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         }
         self.tableView.reloadData()
     }
-    
-    // アラートパーツ: ミッション追加
-    let missionAddAlert = UIAlertController(title: "Todoの追加", message: "ToDo名と報酬ptを入力", preferredStyle: .alert)
     
     //　アラート: エラー表示
     func showAlert(_ message: String){
