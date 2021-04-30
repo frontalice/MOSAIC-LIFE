@@ -15,7 +15,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     let userDefaults = UserDefaults.standard
     var shopLists: [(shopList: [(item: String, pt: Int)], listName: String)] = [([("ポイントを消費", 100)],"TestSection")]
 //    var shopList = [(item: String, pt: Int)]()
-    var consumedPtHistory = Array<Int>()
+    var consumedPtHistory = Array<(item:String, pt:Int)>()
     
     //MARK: - TableView関連
 
@@ -48,7 +48,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         self.tableView.setEditing(editing, animated: true)
     }
     
-    //全セルが削除対象
+    //削除できるセル: 全部
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
@@ -64,18 +64,44 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         }
     }
     
+    //移動できるセル: 全部
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    //セル移動時の処理
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        let targetCell = shopLists[sourceIndexPath.section].shopList[sourceIndexPath.row]
+        shopLists[sourceIndexPath.section].shopList.remove(at: sourceIndexPath.row)
+        shopLists[sourceIndexPath.section].shopList.insert(targetCell, at: destinationIndexPath.row)
+    }
+    
+    //セル移動の制限: とりあえず同セクション間での移動のみに留める
+    /*
+     セルを動かしてるとき、
+     移動中セルのセクションとその真下のセルのセクションが一致している場合は空きセルの場所がproposedDestinationIndexPathになり、
+     セクションが一致してない場合は空きセルの場所は変化しない（sourceIndexPathのまま）、的な？
+    */
+    func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
+        if sourceIndexPath.section == proposedDestinationIndexPath.section {
+            return proposedDestinationIndexPath
+        }
+        return sourceIndexPath
+    }
+    
     // isEditing = false: セルをタップでポイント獲得
     // isEditing = true:  既存セルの編集
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !self.tableView.isEditing {
             let setting = UserDefaults.standard
             var presentPoint: Int = setting.integer(forKey: "storePoints")
+            let consumeItem: String = shopLists[indexPath.section].shopList[indexPath.row].item
             let consumePoint: Int = shopLists[indexPath.section].shopList[indexPath.row].pt
             presentPoint -= consumePoint
             setting.set(presentPoint, forKey: "storePoints")
             setting.synchronize()
             pointLabel.text = String(presentPoint)
-            consumedPtHistory.append(consumePoint)
+            consumedPtHistory.append((consumeItem,consumePoint))
         } else {
             // 編集モード時にタップしたらミッション名やポイントを変更できるようにする
 //            print("editing now")
@@ -160,8 +186,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         
         // +とEditボタン追加
         let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
-        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
-        navigationItem.rightBarButtonItems = [editButtonItem, addButton, sortButton]
+//        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
+        navigationItem.rightBarButtonItems = [editButtonItem, addButton]
         
         // リスト情報をmissionMemoryから読み込み
         let categoryCount: Int = userDefaults.integer(forKey: "categoryCount_shop")
@@ -209,8 +235,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         // メイン画面vcにconsumedPtHistoryを渡す
         let nvc = self.navigationController!
         let vc = nvc.viewControllers[0] as! ViewController
-        for element in consumedPtHistory {
-            vc.usedPointArray.append(element)
+        for i in 0..<consumedPtHistory.count {
+            vc.usedPointArray.append(consumedPtHistory[i])
 //            print(element)
         }
         //ptHistoryの初期化
@@ -300,14 +326,14 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     }
     
     // ソートボタン: 降順で並び替え
-    @objc func sortButtonTapped(_ sender: UIBarButtonItem){
-        for i in 0..<shopLists.count {
-            shopLists[i].shopList.sort{(A,B) -> Bool in
-                return A.pt > B.pt
-            }
-        }
-        self.tableView.reloadData()
-    }
+//    @objc func sortButtonTapped(_ sender: UIBarButtonItem){
+//        for i in 0..<shopLists.count {
+//            shopLists[i].shopList.sort{(A,B) -> Bool in
+//                return A.pt > B.pt
+//            }
+//        }
+//        self.tableView.reloadData()
+//    }
     
     //　アラート: エラー表示
     func showAlert(_ message: String){

@@ -14,7 +14,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     let userDefaults = UserDefaults.standard
     var missionLists: [(missionList: [(mission: String, pt: Int)], listName: String)] = [([("ポイントを獲得", 100)],"TestSection")]
 //    var missionList = [(mission: String, pt: Int)]()
-    var exchangedPtHistory = Array<Int>()
+    var exchangedPtHistory = Array<(item:String, pt:Int)>()
     
     //MARK: - TableView関連
     //セクション数
@@ -46,7 +46,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         self.tableView.setEditing(editing, animated: true)
     }
     
-    //全セルが削除対象
+    //削除できるセル: 全部
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
@@ -62,18 +62,44 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         }
     }
     
+    //移動できるセル: 全部
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    //セル移動時の処理
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        let targetCell = missionLists[sourceIndexPath.section].missionList[sourceIndexPath.row]
+        missionLists[sourceIndexPath.section].missionList.remove(at: sourceIndexPath.row)
+        missionLists[sourceIndexPath.section].missionList.insert(targetCell, at: destinationIndexPath.row)
+    }
+    
+    //セル移動の制限: とりあえず同セクション間での移動のみに留める
+    /*
+     セルを動かしてるとき、
+     移動中セルのセクションとその真下のセルのセクションが一致している場合は空きセルの場所がproposedDestinationIndexPathになり、
+     セクションが一致してない場合は空きセルの場所は変化しない（sourceIndexPathのまま）、的な？
+    */
+    func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
+        if sourceIndexPath.section == proposedDestinationIndexPath.section {
+            return proposedDestinationIndexPath
+        }
+        return sourceIndexPath
+    }
+    
     // isEditing = false: セルをタップでポイント獲得
     // isEditing = true:  既存セルの編集
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !self.tableView.isEditing {
             let setting = UserDefaults.standard
             var presentPoint: Int = setting.integer(forKey: "storePoints")
+            let missionItem: String = missionLists[indexPath.section].missionList[indexPath.row].mission
             let missionPoint: Int = missionLists[indexPath.section].missionList[indexPath.row].pt
             presentPoint += missionPoint
             setting.set(presentPoint, forKey: "storePoints")
             setting.synchronize()
             pointLabel.text = String(presentPoint)
-            exchangedPtHistory.append(missionPoint)
+            exchangedPtHistory.append((missionItem,missionPoint))
         } else {
             // 編集モード時にタップしたらミッション名やポイントを変更できるようにする
 //            print("editing now")
@@ -155,8 +181,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         
         // +とEditボタン追加
         let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
-        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
-        navigationItem.rightBarButtonItems = [editButtonItem, addButton, sortButton]
+//        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
+        navigationItem.rightBarButtonItems = [editButtonItem, addButton]
         
         // リスト情報をmissionMemoryから読み込み
         let categoryCount: Int = userDefaults.integer(forKey: "categoryCount")
@@ -204,8 +230,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         //メイン画面vcにexchangedPtHistoryを渡す
         let nvc = self.navigationController!
         let vc = nvc.viewControllers[0] as! ViewController
-        for element in exchangedPtHistory {
-            vc.gotPointArray.append(element)
+        for i in 0..<exchangedPtHistory.count {
+            vc.gotPointArray.append(exchangedPtHistory[i])
 //            print(element)
         }
         //ptHistoryの初期化
@@ -295,14 +321,14 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     }
     
     // ソートボタン: 降順で並び替え
-    @objc func sortButtonTapped(_ sender: UIBarButtonItem){
-        for i in 0..<missionLists.count {
-            missionLists[i].missionList.sort{(A,B) -> Bool in
-                return A.pt > B.pt
-            }
-        }
-        self.tableView.reloadData()
-    }
+//    @objc func sortButtonTapped(_ sender: UIBarButtonItem){
+//        for i in 0..<missionLists.count {
+//            missionLists[i].missionList.sort{(A,B) -> Bool in
+//                return A.pt > B.pt
+//            }
+//        }
+//        self.tableView.reloadData()
+//    }
     
     //　アラート: エラー表示
     func showAlert(_ message: String){

@@ -11,8 +11,8 @@ import UIKit
 class ViewController: UIViewController,UITextFieldDelegate {
     
     let settings = UserDefaults.standard
-    var gotPointArray = Array<Int>()
-    var usedPointArray = Array<Int>()
+    var gotPointArray = Array<(item:String, pt:Int)>()
+    var usedPointArray = Array<(item:String, pt:Int)>()
 
     // 起動時処理
     override func viewDidLoad() {
@@ -39,8 +39,8 @@ class ViewController: UIViewController,UITextFieldDelegate {
         
         // 交換画面での交換履歴をテキストログに表示
         if gotPointArray.isEmpty != true {
-            for element1 in gotPointArray {
-                debugLog.text += "\(element1)pt獲得しました。\n"
+            for i in 0..<gotPointArray.count {
+                debugLog.text += "「\(gotPointArray[i].item)」で\(gotPointArray[i].pt)pt獲得しました。\n"
             }
             gotPointArray.removeAll()
             debugLog.text += "現在: \(String(roadPoints()))pts\n"
@@ -48,8 +48,8 @@ class ViewController: UIViewController,UITextFieldDelegate {
         
         // 購入画面での購入履歴をテキストログに表示
         if usedPointArray.isEmpty != true {
-            for element2 in usedPointArray {
-                debugLog.text += "\(element2)pt消費しました。\n"
+            for i in 0..<usedPointArray.count {
+                debugLog.text += "「\(usedPointArray[i].item)」で\(usedPointArray[i].pt)pt消費しました。\n"
             }
             usedPointArray.removeAll()
             debugLog.text += "現在: \(String(roadPoints()))pts\n"
