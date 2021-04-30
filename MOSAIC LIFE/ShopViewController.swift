@@ -192,15 +192,17 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         
         //編集中でもセルを選択できるようにする
         self.tableView.allowsSelectionDuringEditing = true
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
+        
         // 残りptとチケット数を取得
         let setting = UserDefaults.standard
         let presentPoint: Int = setting.integer(forKey: "storePoints")
         pointLabel.text = String(presentPoint)
         let presentTickets: Int = setting.integer(forKey: "storeTickets")
         ticketLabel.text = String(presentTickets)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {

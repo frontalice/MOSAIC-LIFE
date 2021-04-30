@@ -165,7 +165,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             if userDefaults.object(forKey: "missionMemory\(String(i))") != nil {
                 if let dicList = userDefaults.object(forKey: "missionMemory\(String(i))") as? [[String: Any]] {
     //                print(dicList)
-                    // FIXME: ここ治す
                     // 初期化したmissionListsにはmissionLists[1]以降が無いので都度追加
                     if i > 0 {
                         self.missionLists.append((missionList: [], listName: ""))
@@ -188,15 +187,17 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         
         //編集中でもセルを選択できるようにする
         self.tableView.allowsSelectionDuringEditing = true
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
+        
         // 残りptとチケット数を取得
         let setting = UserDefaults.standard
         let presentPoint: Int = setting.integer(forKey: "storePoints")
         pointLabel.text = String(presentPoint)
         let presentTickets: Int = setting.integer(forKey: "storeTickets")
         ticketLabel.text = String(presentTickets)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {

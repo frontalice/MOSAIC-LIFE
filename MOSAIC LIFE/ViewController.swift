@@ -29,45 +29,31 @@ class ViewController: UIViewController,UITextFieldDelegate {
         pointLabel.text = String(roadPoints())
         ticketLabel.text = String(roadTickets())
         
-        //テスト用：起動毎に初期化
-//        settings.removeObject(forKey: "storePoints")
-//        settings.removeObject(forKey: "storeTickets")
-        
-//        settings.register(defaults: ["storePoints":0, "storeTickets":0])
-        // テスト中なのでポイントは起動毎に初期化します
-//        pointLabel.text = String(roadPoints())
-//        ticketLabel.text = String(roadTickets())
-        
-//        writeFirstLog()
-        
         pointDebug.text = "0"
+        
+        debugLog.text += "現在: \(String(roadPoints()))pts\n"
     }
-    
-//    func writeFirstLog() {
-//        var ptString: String? = pointLabel.text
-//        ptString = settings.string(forKey: "storePoints")
-//        let logText = (t1: "現在: ", t2: "pts\n")
-//        if let ptxt = ptString {
-//            debugLog.text = logText.0 + ptxt + logText.1
-//            return
-//        }
-//        debugLog.text = "読み込みに失敗しました\n"
-//    }
     
     override func viewWillAppear(_ animated: Bool) {
         pointLabel.text = String(roadPoints())
         
-        for element1 in gotPointArray {
-            debugLog.text += "\(element1)pt獲得しました。\n"
+        // 交換画面での交換履歴をテキストログに表示
+        if gotPointArray.isEmpty != true {
+            for element1 in gotPointArray {
+                debugLog.text += "\(element1)pt獲得しました。\n"
+            }
+            gotPointArray.removeAll()
+            debugLog.text += "現在: \(String(roadPoints()))pts\n"
         }
-        gotPointArray.removeAll()
         
-        for element2 in usedPointArray {
-            debugLog.text += "\(element2)pt消費しました。\n"
+        // 購入画面での購入履歴をテキストログに表示
+        if usedPointArray.isEmpty != true {
+            for element2 in usedPointArray {
+                debugLog.text += "\(element2)pt消費しました。\n"
+            }
+            usedPointArray.removeAll()
+            debugLog.text += "現在: \(String(roadPoints()))pts\n"
         }
-        usedPointArray.removeAll()
-        
-        debugLog.text += "現在: \(String(roadPoints()))pts\n"
     }
 
     @IBOutlet weak var pointLabel: UILabel!
@@ -75,11 +61,13 @@ class ViewController: UIViewController,UITextFieldDelegate {
     @IBOutlet weak var pointDebug: UITextField!
     @IBOutlet weak var debugLog: UITextView!
     
+    // 現在ptを読み込み
     func roadPoints() -> Int {
         if settings.object(forKey: "storePoints") != nil {
             let roadPoint : Int = settings.integer(forKey: "storePoints")
             return roadPoint
         }
+        //nilの場合「0pt」で表示
         settings.set(0, forKey: "storePoints")
         let roadPoint : Int = settings.integer(forKey: "storePoints")
         return roadPoint
