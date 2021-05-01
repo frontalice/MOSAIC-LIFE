@@ -218,8 +218,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         let setting = UserDefaults.standard
         let presentPoint: Int = setting.integer(forKey: "storePoints")
         pointLabel.text = String(presentPoint)
-        let presentTickets: Int = setting.integer(forKey: "storeTickets")
-        ticketLabel.text = String(presentTickets)
+//        let presentTickets: Int = setting.integer(forKey: "storeTickets")
+//        ticketLabel.text = String(presentTickets)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -252,7 +252,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 
     //MARK: - StoryBoard
     @IBOutlet weak var pointLabel: UILabel!
-    @IBOutlet weak var ticketLabel: UILabel!
+//    @IBOutlet weak var ticketLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
     
     //MARK: - UI部品

@@ -3,7 +3,6 @@
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
-        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -44,30 +43,15 @@
                                     <constraint firstAttribute="bottom" secondItem="5oo-9k-QWQ" secondAttribute="bottom" id="lbm-3o-ZN5"/>
                                 </constraints>
                             </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="VdE-3t-WiZ">
-                                <rect key="frame" x="148.5" y="166" width="78.5" height="36"/>
-                                <subviews>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="bA9-vq-yfg">
-                                        <rect key="frame" x="0.0" y="-0.5" width="30.5" height="36.5"/>
-                                        <imageReference key="image" image="ticket" catalog="system" symbolScale="large"/>
-                                    </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0ks-nd-S31">
-                                        <rect key="frame" x="42.5" y="0.0" width="36" height="36"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="30"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                </subviews>
-                            </stackView>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="UHi-9K-fMm">
-                                <rect key="frame" x="20" y="386.5" width="335" height="270.5"/>
+                                <rect key="frame" x="20" y="338.5" width="335" height="318.5"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <color key="textColor" systemColor="labelColor"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="79" translatesAutoresizingMaskIntoConstraints="NO" id="2Dr-YM-qfr">
-                                <rect key="frame" x="67" y="224" width="241" height="60"/>
+                                <rect key="frame" x="67" y="176" width="241" height="60"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dxi-hO-8Zp">
                                         <rect key="frame" x="0.0" y="0.0" width="81" height="60"/>
@@ -92,7 +76,7 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="61" translatesAutoresizingMaskIntoConstraints="NO" id="Uv6-ty-lQi">
-                                <rect key="frame" x="80.5" y="311" width="214" height="45.5"/>
+                                <rect key="frame" x="80.5" y="263" width="214" height="45.5"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Debug" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mgS-HF-6yt">
                                         <rect key="frame" x="0.0" y="0.0" width="51" height="45.5"/>
@@ -125,6 +109,7 @@
                             <constraint firstItem="Uv6-ty-lQi" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="3jf-aS-ja6"/>
                             <constraint firstItem="UHi-9K-fMm" firstAttribute="top" secondItem="Uv6-ty-lQi" secondAttribute="bottom" constant="30" id="9sB-ZW-XAy"/>
                             <constraint firstItem="UIs-3y-65h" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="30" id="BjZ-0h-0bk"/>
+                            <constraint firstItem="2Dr-YM-qfr" firstAttribute="top" secondItem="UIs-3y-65h" secondAttribute="bottom" constant="30" id="FMQ-2Z-ErR"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UHi-9K-fMm" secondAttribute="trailing" constant="20" id="FSV-Ge-KQC"/>
                             <constraint firstItem="UHi-9K-fMm" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="JQa-84-FLT"/>
                             <constraint firstItem="UIs-3y-65h" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="10" id="Pxm-Ds-0aA"/>
@@ -133,11 +118,8 @@
                             <constraint firstItem="UIs-3y-65h" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="TgA-Fg-IrU"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UIs-3y-65h" secondAttribute="trailing" constant="10" id="VF4-Jk-4PP"/>
                             <constraint firstItem="Uv6-ty-lQi" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="80.5" id="aDJ-Ax-ym3"/>
-                            <constraint firstItem="VdE-3t-WiZ" firstAttribute="top" secondItem="UIs-3y-65h" secondAttribute="bottom" constant="20" id="bIc-po-OFR"/>
                             <constraint firstItem="2Dr-YM-qfr" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="cQG-3R-KUb"/>
-                            <constraint firstItem="VdE-3t-WiZ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="cVl-9w-6Uq"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Uv6-ty-lQi" secondAttribute="trailing" constant="80.5" id="oyM-Nw-NdP"/>
-                            <constraint firstItem="2Dr-YM-qfr" firstAttribute="top" secondItem="VdE-3t-WiZ" secondAttribute="bottom" constant="22" id="sbE-h4-pK4"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="lwn-8F-Bez"/>
@@ -145,7 +127,6 @@
                         <outlet property="debugLog" destination="UHi-9K-fMm" id="atT-GK-j4K"/>
                         <outlet property="pointDebug" destination="X2l-2o-d9F" id="nEJ-bS-npg"/>
                         <outlet property="pointLabel" destination="5oo-9k-QWQ" id="c52-w6-8Da"/>
-                        <outlet property="ticketLabel" destination="0ks-nd-S31" id="aXu-br-z5U"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -184,28 +165,14 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="ticket" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="uVM-Gx-fHW">
-                                <rect key="frame" x="117" y="634.5" width="25" height="20"/>
-                            </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="n5b-4e-0Ou">
-                                <rect key="frame" x="152" y="634" width="21" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="lOE-I4-j0F"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="CT1-ML-J9y" firstAttribute="top" secondItem="7yI-fX-2hT" secondAttribute="bottom" constant="12" id="68r-Lp-Qc8"/>
-                            <constraint firstItem="lOE-I4-j0F" firstAttribute="bottom" secondItem="uVM-Gx-fHW" secondAttribute="bottom" constant="10.5" id="7hB-c1-c9R"/>
-                            <constraint firstItem="lOE-I4-j0F" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="n5b-4e-0Ou" secondAttribute="trailing" constant="202" id="BuZ-q0-4fK"/>
                             <constraint firstItem="CT1-ML-J9y" firstAttribute="leading" secondItem="YRS-7h-81E" secondAttribute="trailing" constant="4" id="Hml-mx-RI4"/>
                             <constraint firstItem="7yI-fX-2hT" firstAttribute="trailing" secondItem="lOE-I4-j0F" secondAttribute="trailing" id="I3c-t9-iXW"/>
-                            <constraint firstItem="uVM-Gx-fHW" firstAttribute="leading" secondItem="CT1-ML-J9y" secondAttribute="trailing" constant="10" id="KDm-PW-jm3"/>
                             <constraint firstItem="XUD-TY-MPW" firstAttribute="leading" secondItem="lOE-I4-j0F" secondAttribute="leading" id="MFD-Me-W4E"/>
-                            <constraint firstItem="lOE-I4-j0F" firstAttribute="bottom" secondItem="n5b-4e-0Ou" secondAttribute="bottom" constant="12" id="OY9-3z-N6a"/>
-                            <constraint firstItem="uVM-Gx-fHW" firstAttribute="top" secondItem="7yI-fX-2hT" secondAttribute="bottom" constant="10" id="QH3-dY-PLi"/>
                             <constraint firstItem="lOE-I4-j0F" firstAttribute="bottom" secondItem="YRS-7h-81E" secondAttribute="bottom" constant="11" id="T0L-kz-tTF"/>
                             <constraint firstItem="7yI-fX-2hT" firstAttribute="top" secondItem="lOE-I4-j0F" secondAttribute="top" id="T4B-ne-wSs"/>
                             <constraint firstItem="7yI-fX-2hT" firstAttribute="leading" secondItem="lOE-I4-j0F" secondAttribute="leading" id="UnS-4V-NcN"/>
@@ -213,9 +180,7 @@
                             <constraint firstItem="YRS-7h-81E" firstAttribute="leading" secondItem="lOE-I4-j0F" secondAttribute="leading" constant="30" id="ZBh-K0-vwk"/>
                             <constraint firstItem="XUD-TY-MPW" firstAttribute="bottom" secondItem="lOE-I4-j0F" secondAttribute="bottom" id="hWU-A5-fvb"/>
                             <constraint firstItem="lOE-I4-j0F" firstAttribute="bottom" secondItem="CT1-ML-J9y" secondAttribute="bottom" constant="11" id="isL-Zt-vM6"/>
-                            <constraint firstItem="n5b-4e-0Ou" firstAttribute="top" secondItem="7yI-fX-2hT" secondAttribute="bottom" constant="11" id="kqP-FP-ZIl"/>
                             <constraint firstItem="XUD-TY-MPW" firstAttribute="top" secondItem="7yI-fX-2hT" secondAttribute="bottom" id="pv1-dU-tBj"/>
-                            <constraint firstItem="n5b-4e-0Ou" firstAttribute="leading" secondItem="uVM-Gx-fHW" secondAttribute="trailing" constant="10" id="qbD-VK-jXr"/>
                             <constraint firstItem="YRS-7h-81E" firstAttribute="top" secondItem="7yI-fX-2hT" secondAttribute="bottom" constant="12" id="tBH-GB-WWu"/>
                         </constraints>
                     </view>
@@ -223,7 +188,6 @@
                     <connections>
                         <outlet property="pointLabel" destination="YRS-7h-81E" id="PXp-QH-IRY"/>
                         <outlet property="tableView" destination="7yI-fX-2hT" id="hm0-F1-gbW"/>
-                        <outlet property="ticketLabel" destination="n5b-4e-0Ou" id="9m6-hD-43s"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rxZ-Ka-IGv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -262,15 +226,6 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="ticket" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="gQf-aJ-dX7">
-                                <rect key="frame" x="149" y="634.5" width="25" height="20.5"/>
-                            </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="H2a-LS-4sX">
-                                <rect key="frame" x="184" y="633" width="23.5" height="24"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="vFc-GH-RPC"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -283,26 +238,18 @@
                             <constraint firstItem="FxL-s0-Ibj" firstAttribute="top" secondItem="vFc-GH-RPC" secondAttribute="top" id="LGA-vN-lln"/>
                             <constraint firstItem="4Xy-5c-Pxl" firstAttribute="leading" secondItem="ioa-ZI-4dj" secondAttribute="trailing" constant="10" id="Lrr-ow-vth"/>
                             <constraint firstItem="vFc-GH-RPC" firstAttribute="bottom" secondItem="4Xy-5c-Pxl" secondAttribute="bottom" constant="4" id="NuF-1s-BrQ"/>
-                            <constraint firstItem="vFc-GH-RPC" firstAttribute="bottom" secondItem="H2a-LS-4sX" secondAttribute="bottom" constant="10" id="SH6-hB-NhP"/>
                             <constraint firstItem="ioa-ZI-4dj" firstAttribute="top" secondItem="FxL-s0-Ibj" secondAttribute="bottom" constant="10" id="Seu-s7-5sA"/>
-                            <constraint firstItem="gQf-aJ-dX7" firstAttribute="top" secondItem="FxL-s0-Ibj" secondAttribute="bottom" constant="10" id="WVE-4R-z9Z"/>
                             <constraint firstItem="vFc-GH-RPC" firstAttribute="bottom" secondItem="ioa-ZI-4dj" secondAttribute="bottom" constant="8" id="Wwd-1U-aOl"/>
                             <constraint firstItem="FxL-s0-Ibj" firstAttribute="leading" secondItem="vFc-GH-RPC" secondAttribute="leading" id="cEC-LW-yEQ"/>
-                            <constraint firstItem="H2a-LS-4sX" firstAttribute="top" secondItem="FxL-s0-Ibj" secondAttribute="bottom" constant="10" id="dEl-1U-ziQ"/>
                             <constraint firstItem="0qr-pp-4Jg" firstAttribute="top" secondItem="FxL-s0-Ibj" secondAttribute="bottom" id="gs8-xZ-QUI"/>
                             <constraint firstItem="0qr-pp-4Jg" firstAttribute="trailing" secondItem="vFc-GH-RPC" secondAttribute="trailing" id="h7z-6w-dcZ"/>
-                            <constraint firstItem="vFc-GH-RPC" firstAttribute="bottom" secondItem="gQf-aJ-dX7" secondAttribute="bottom" constant="10" id="mc1-lM-T7x"/>
                             <constraint firstItem="FxL-s0-Ibj" firstAttribute="trailing" secondItem="vFc-GH-RPC" secondAttribute="trailing" id="noP-Fl-eUD"/>
-                            <constraint firstItem="vFc-GH-RPC" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="H2a-LS-4sX" secondAttribute="trailing" constant="167.5" id="p2x-pg-1xu"/>
-                            <constraint firstItem="H2a-LS-4sX" firstAttribute="leading" secondItem="gQf-aJ-dX7" secondAttribute="trailing" constant="10" id="v0c-Nk-ah5"/>
-                            <constraint firstItem="gQf-aJ-dX7" firstAttribute="leading" secondItem="4Xy-5c-Pxl" secondAttribute="trailing" constant="30" id="yEB-Vk-KO8"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="購入" id="Jub-Bf-QVM"/>
                     <connections>
                         <outlet property="pointLabel" destination="ioa-ZI-4dj" id="SsS-jd-hkr"/>
                         <outlet property="tableView" destination="FxL-s0-Ibj" id="q0Q-1B-nmg"/>
-                        <outlet property="ticketLabel" destination="H2a-LS-4sX" id="IAI-kN-wfQ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="R7F-zb-8DV" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -329,7 +276,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="ticket" catalog="system" width="128" height="84"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

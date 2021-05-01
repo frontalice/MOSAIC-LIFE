@@ -27,7 +27,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
         
         //残pt・チケット読み込み
         pointLabel.text = String(roadPoints())
-        ticketLabel.text = String(roadTickets())
+//        ticketLabel.text = String(roadTickets())
         
         pointDebug.text = "0"
         
@@ -57,7 +57,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
     }
 
     @IBOutlet weak var pointLabel: UILabel!
-    @IBOutlet weak var ticketLabel: UILabel!
+//    @IBOutlet weak var ticketLabel: UILabel!
     @IBOutlet weak var pointDebug: UITextField!
     @IBOutlet weak var debugLog: UITextView!
     
@@ -73,17 +73,17 @@ class ViewController: UIViewController,UITextFieldDelegate {
         return roadPoint
     }
     
-    func roadTickets() -> Int {
-        if settings.object(forKey: "storeTickets") != nil {
-            let roadTicket : Int =
-                settings.integer(forKey: "storeTickets")
-            return roadTicket
-        }
-        settings.set(0, forKey: "storeTickets")
-        let roadTicket : Int =
-            settings.integer(forKey: "storeTickets")
-        return roadTicket
-    }
+//    func roadTickets() -> Int {
+//        if settings.object(forKey: "storeTickets") != nil {
+//            let roadTicket : Int =
+//                settings.integer(forKey: "storeTickets")
+//            return roadTicket
+//        }
+//        settings.set(0, forKey: "storeTickets")
+//        let roadTicket : Int =
+//            settings.integer(forKey: "storeTickets")
+//        return roadTicket
+//    }
     
     // デバッグフィールド入力完了時の処理
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
