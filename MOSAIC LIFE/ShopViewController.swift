@@ -62,6 +62,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             shopLists.remove(at: indexPath.section)
             tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
         }
+        saveTableViewData()
     }
     
     //移動できるセル: 全部
@@ -74,25 +75,27 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         let targetCell = shopLists[sourceIndexPath.section].shopList[sourceIndexPath.row]
         shopLists[sourceIndexPath.section].shopList.remove(at: sourceIndexPath.row)
         shopLists[sourceIndexPath.section].shopList.insert(targetCell, at: destinationIndexPath.row)
+        saveTableViewData()
     }
     
     //セル移動の制限: とりあえず同セクション間での移動のみに留める
-    /*
-     セルを動かしてるとき、
-     移動中セルのセクションとその真下のセルのセクションが一致している場合は空きセルの場所がproposedDestinationIndexPathになり、
-     セクションが一致してない場合は空きセルの場所は変化しない（sourceIndexPathのまま）、的な？
-    */
     func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
         if sourceIndexPath.section == proposedDestinationIndexPath.section {
             return proposedDestinationIndexPath
         }
         return sourceIndexPath
     }
+    /*
+     セルを動かしてるとき、
+     移動中セルのセクションとその真下のセルのセクションが一致している場合は空きセルの場所がproposedDestinationIndexPathになり、
+     セクションが一致してない場合は空きセルの場所は変化しない（sourceIndexPathのまま）、的な？
+    */
     
     // isEditing = false: セルをタップでポイント獲得
     // isEditing = true:  既存セルの編集
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !self.tableView.isEditing {
+            //userDefaultsに残ptのデータを保存
             let setting = UserDefaults.standard
             var presentPoint: Int = setting.integer(forKey: "storePoints")
             let consumeItem: String = shopLists[indexPath.section].shopList[indexPath.row].item
@@ -100,8 +103,12 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             presentPoint -= consumePoint
             setting.set(presentPoint, forKey: "storePoints")
             setting.synchronize()
+            // 画面左下のラベルを更新
             pointLabel.text = String(presentPoint)
+            //消費履歴を更新
             consumedPtHistory.append((consumeItem,consumePoint))
+            //選択エフェクトを解除
+            tableView.deselectRow(at: indexPath, animated: true)
         } else {
             // 編集モード時にタップしたらミッション名やポイントを変更できるようにする
 //            print("editing now")
@@ -122,6 +129,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                         self.shopLists[indexPath.section].shopList[indexPath.row].item = itemText
                         self.shopLists[indexPath.section].shopList[indexPath.row].pt = ptInt
                         self.tableView.reloadData()
+                        self.saveTableViewData()
                     } else {
                         self.showAlert("ptに文字を入れるな")
                     }
@@ -143,6 +151,18 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         shopLists[section].shopList.append((item, pt))
         // TableViewに追加
         tableView.reloadData()
+        //userDefaults更新
+        saveTableViewData()
+    }
+    
+    func saveTableViewData(){
+        for i in 0..<shopLists.count {
+            let convertedList: [[String: Any]] = shopLists[i].shopList.map{["item": $0.item, "pt": $0.pt]}
+            userDefaults.set(convertedList, forKey: "shopMemory\(String(i))")
+            userDefaults.set(shopLists[i].listName, forKey: "categoryName\(String(i))_shop")
+//            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("shopMemory") })
+        }
+        userDefaults.set(shopLists.count, forKey: "categoryCount_shop")
     }
     
     //MARK: - PickerView関連
@@ -242,16 +262,13 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         //ptHistoryの初期化
         consumedPtHistory.removeAll()
         //リスト情報の保存
-        for i in 0..<shopLists.count {
-//            print(shopList)
-            let convertedList: [[String: Any]] = shopLists[i].shopList.map{["item": $0.item, "pt": $0.pt]}
-//            print(convertedList)
-            userDefaults.set(convertedList, forKey: "shopMemory\(String(i))")
-            userDefaults.set(shopLists[i].listName, forKey: "categoryName\(String(i))_shop")
-            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("shopMemory") })
-            print("----------------------\n")
-        }
-        userDefaults.set(shopLists.count, forKey: "categoryCount_shop")
+//        for i in 0..<shopLists.count {
+//            let convertedList: [[String: Any]] = shopLists[i].shopList.map{["item": $0.item, "pt": $0.pt]}
+//            userDefaults.set(convertedList, forKey: "shopMemory\(String(i))")
+//            userDefaults.set(shopLists[i].listName, forKey: "categoryName\(String(i))_shop")
+////            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("shopMemory") })
+//        }
+//        userDefaults.set(shopLists.count, forKey: "categoryCount_shop")
     }
     
     // MARK: - StoryBoard
@@ -355,6 +372,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                 self.shopLists.removeLast()
                 self.shopLists.append((shopList: [(item, pt)], categoryText))
                 self.tableView.reloadData()
+                self.saveTableViewData()
             } else {
                 self.showAlert("なんか書いてくれ")
             }

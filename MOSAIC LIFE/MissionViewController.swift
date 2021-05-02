@@ -60,6 +60,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             missionLists.remove(at: indexPath.section)
             tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
         }
+        saveTableViewData()
     }
     
     //移動できるセル: 全部
@@ -72,25 +73,27 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         let targetCell = missionLists[sourceIndexPath.section].missionList[sourceIndexPath.row]
         missionLists[sourceIndexPath.section].missionList.remove(at: sourceIndexPath.row)
         missionLists[sourceIndexPath.section].missionList.insert(targetCell, at: destinationIndexPath.row)
+        saveTableViewData()
     }
     
     //セル移動の制限: とりあえず同セクション間での移動のみに留める
-    /*
-     セルを動かしてるとき、
-     移動中セルのセクションとその真下のセルのセクションが一致している場合は空きセルの場所がproposedDestinationIndexPathになり、
-     セクションが一致してない場合は空きセルの場所は変化しない（sourceIndexPathのまま）、的な？
-    */
     func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
         if sourceIndexPath.section == proposedDestinationIndexPath.section {
             return proposedDestinationIndexPath
         }
         return sourceIndexPath
     }
+    /*
+     セルを動かしてるとき、
+     移動中セルのセクションとその真下のセルのセクションが一致している場合は空きセルの場所がproposedDestinationIndexPathになり、
+     セクションが一致してない場合は空きセルの場所は変化しない（sourceIndexPathのまま）、的な？
+    */
     
     // isEditing = false: セルをタップでポイント獲得
     // isEditing = true:  既存セルの編集
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !self.tableView.isEditing {
+            //userDefaultsに残ptのデータを保存
             let setting = UserDefaults.standard
             var presentPoint: Int = setting.integer(forKey: "storePoints")
             let missionItem: String = missionLists[indexPath.section].missionList[indexPath.row].mission
@@ -98,8 +101,12 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             presentPoint += missionPoint
             setting.set(presentPoint, forKey: "storePoints")
             setting.synchronize()
+            //画面左下のラベルを更新
             pointLabel.text = String(presentPoint)
+            //獲得履歴を更新
             exchangedPtHistory.append((missionItem,missionPoint))
+            //選択エフェクトを解除
+            tableView.deselectRow(at: indexPath, animated: true)
         } else {
             // 編集モード時にタップしたらミッション名やポイントを変更できるようにする
 //            print("editing now")
@@ -120,6 +127,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                         self.missionLists[indexPath.section].missionList[indexPath.row].mission = missionText
                         self.missionLists[indexPath.section].missionList[indexPath.row].pt = ptInt
                         self.tableView.reloadData()
+                        self.saveTableViewData()
                     } else {
                         self.showAlert("ptに文字を入れるな")
                     }
@@ -141,6 +149,18 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         missionLists[section].missionList.append((mission, pt))
         // TableViewに追加
         tableView.reloadData()
+        //userDefaults更新
+        saveTableViewData()
+    }
+    
+    func saveTableViewData(){
+        for i in 0..<missionLists.count {
+            let convertedList: [[String: Any]] = missionLists[i].missionList.map{["mission": $0.mission, "pt": $0.pt]}
+            userDefaults.set(convertedList, forKey: "missionMemory\(String(i))")
+            userDefaults.set(missionLists[i].listName, forKey: "categoryName\(String(i))")
+//            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("missionMemory") })
+        }
+        userDefaults.set(missionLists.count, forKey: "categoryCount")
     }
     
     //MARK: - PickerView関連
@@ -238,16 +258,13 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         exchangedPtHistory.removeAll()
 //        print("History Cleared")
         //リスト情報の保存
-        for i in 0..<missionLists.count {
-//            print(missionList)
-            let convertedList: [[String: Any]] = missionLists[i].missionList.map{["mission": $0.mission, "pt": $0.pt]}
-//            print(convertedList)
-            userDefaults.set(convertedList, forKey: "missionMemory\(String(i))")
-            userDefaults.set(missionLists[i].listName, forKey: "categoryName\(String(i))")
-            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("missionMemory") })
-            print("----------------------\n")
-        }
-        userDefaults.set(missionLists.count, forKey: "categoryCount")
+//        for i in 0..<missionLists.count {
+//            let convertedList: [[String: Any]] = missionLists[i].missionList.map{["mission": $0.mission, "pt": $0.pt]}
+//            userDefaults.set(convertedList, forKey: "missionMemory\(String(i))")
+//            userDefaults.set(missionLists[i].listName, forKey: "categoryName\(String(i))")
+//            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("missionMemory") })
+//        }
+//        userDefaults.set(missionLists.count, forKey: "categoryCount")
     }
 
     //MARK: - StoryBoard
@@ -350,6 +367,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                 self.missionLists.removeLast()
                 self.missionLists.append((missionList: [(mission, pt)], categoryText))
                 self.tableView.reloadData()
+                self.saveTableViewData()
             } else {
                 self.showAlert("なんか書いてくれ")
             }
