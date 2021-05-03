@@ -13,7 +13,10 @@ class ViewController: UIViewController,UITextFieldDelegate {
     let settings = UserDefaults.standard
     var gotPointArray = Array<(item:String, pt:Int)>()
     var usedPointArray = Array<(item:String, pt:Int)>()
-
+    var attrText = NSMutableAttributedString()
+    let date = Date()
+    let dateFormatter = DateFormatter()
+    
     // 起動時処理
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,39 +28,56 @@ class ViewController: UIViewController,UITextFieldDelegate {
         debugLog.layer.borderWidth = 1.0
         debugLog.layer.borderColor = UIColor.black.cgColor
         
-        //残pt・チケット読み込み
+        //残pt読み込み
         pointLabel.text = String(roadPoints())
-//        ticketLabel.text = String(roadTickets())
         
+        //デバッグエリア初期化
         pointDebug.text = "0"
         
-        debugLog.text += "現在: \(String(roadPoints()))pts\n"
+        //時刻フォーマット読み込み
+        dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "HHmm", options: 0, locale: Locale(identifier: "ja_JP"))
+        let time = dateFormatter.string(from: date)
+        
+        //デバッグログ初期化
+        self.attrText = NSMutableAttributedString(string: "[\(time)] 現在: \(String(roadPoints()))pts\n")
+        debugLog.attributedText = attrText
     }
     
     override func viewWillAppear(_ animated: Bool) {
         pointLabel.text = String(roadPoints())
         
+        let time = dateFormatter.string(from: date)
+        
         // 交換画面での交換履歴をテキストログに表示
         if gotPointArray.isEmpty != true {
             for i in 0..<gotPointArray.count {
-                debugLog.text += "「\(gotPointArray[i].item)」で\(gotPointArray[i].pt)pt獲得しました。\n"
+                let gotPtText = NSMutableAttributedString(string: "[\(time)] +\(gotPointArray[i].pt)pt: \"\(gotPointArray[i].item)\"\n")
+                gotPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.blue, range: NSMakeRange(0, gotPtText.length))
+                self.attrText.insert(gotPtText, at: attrText.length)
+//                debugLog.text += "「\(gotPointArray[i].item)」で\(gotPointArray[i].pt)pt獲得しました。\n"
             }
             gotPointArray.removeAll()
-            debugLog.text += "現在: \(String(roadPoints()))pts\n"
+            self.attrText.insert(NSMutableAttributedString(string: "[\(time)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
+            debugLog.attributedText = self.attrText
+//            debugLog.text += "現在: \(String(roadPoints()))pts\n"
         }
         
         // 購入画面での購入履歴をテキストログに表示
         if usedPointArray.isEmpty != true {
             for i in 0..<usedPointArray.count {
-                debugLog.text += "「\(usedPointArray[i].item)」で\(usedPointArray[i].pt)pt消費しました。\n"
+                let consumedPtText = NSMutableAttributedString(string: "[\(time)] -\(usedPointArray[i].pt)pt: \"\(usedPointArray[i].item)\"\n")
+                consumedPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.red, range: NSMakeRange(0, consumedPtText.length))
+                self.attrText.insert(consumedPtText, at: attrText.length)
+//                debugLog.text += "「\(usedPointArray[i].item)」で\(usedPointArray[i].pt)pt消費しました。\n"
             }
             usedPointArray.removeAll()
-            debugLog.text += "現在: \(String(roadPoints()))pts\n"
+            self.attrText.insert(NSMutableAttributedString(string: "[\(time)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
+            debugLog.attributedText = self.attrText
+//            debugLog.text += "現在: \(String(roadPoints()))pts\n"
         }
     }
 
     @IBOutlet weak var pointLabel: UILabel!
-//    @IBOutlet weak var ticketLabel: UILabel!
     @IBOutlet weak var pointDebug: UITextField!
     @IBOutlet weak var debugLog: UITextView!
     
@@ -73,18 +93,6 @@ class ViewController: UIViewController,UITextFieldDelegate {
         return roadPoint
     }
     
-//    func roadTickets() -> Int {
-//        if settings.object(forKey: "storeTickets") != nil {
-//            let roadTicket : Int =
-//                settings.integer(forKey: "storeTickets")
-//            return roadTicket
-//        }
-//        settings.set(0, forKey: "storeTickets")
-//        let roadTicket : Int =
-//            settings.integer(forKey: "storeTickets")
-//        return roadTicket
-//    }
-    
     // デバッグフィールド入力完了時の処理
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
@@ -96,12 +104,5 @@ class ViewController: UIViewController,UITextFieldDelegate {
         pointLabel.text = s
         return true
     }
-    
-//    @IBAction func leftButton(_ sender: Any) {
-//        performSegue(withIdentifier: "goShop", sender: nil)
-//    }
-//    @IBAction func rightButton(_ sender: Any) {
-//        performSegue(withIdentifier: "goMission", sender: nil)
-//    }
 }
 
