@@ -25,14 +25,13 @@ class ViewController: UIViewController,UITextFieldDelegate {
         //レイアウト読み込み
         pointLabel.layer.borderWidth = 2.0
         pointLabel.layer.borderColor = UIColor.black.cgColor
+        buffLog.layer.borderWidth = 1.0
+        buffLog.layer.borderColor = UIColor.black.cgColor
         debugLog.layer.borderWidth = 1.0
         debugLog.layer.borderColor = UIColor.black.cgColor
         
         //残pt読み込み
         pointLabel.text = String(roadPoints())
-        
-        //デバッグエリア初期化
-        pointDebug.text = "0"
         
         //時刻フォーマット読み込み
         dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "HHmm", options: 0, locale: Locale(identifier: "ja_JP"))
@@ -77,9 +76,20 @@ class ViewController: UIViewController,UITextFieldDelegate {
         }
     }
 
-    @IBOutlet weak var pointLabel: UILabel!
-    @IBOutlet weak var pointDebug: UITextField!
+//    @IBOutlet weak var pointLabel: UILabel!
+    @IBOutlet weak var pointLabel: UITextField!
     @IBOutlet weak var debugLog: UITextView!
+    @IBOutlet weak var buffLog: UITextView!
+    
+    @IBAction func whenPointLabelEdited(_ sender: UITextField) {
+        if pointLabel.text?.isEmpty != true {
+            settings.set(pointLabel.text!, forKey: "storePoints")
+            self.attrText.insert(NSMutableAttributedString(string: "[\(dateFormatter.string(from: date))] 現在: \(pointLabel.text!)pts\n"), at: attrText.length)
+            debugLog.attributedText = self.attrText
+        } else {
+            pointLabel.text = String(roadPoints())
+        }
+    }
     
     // 現在ptを読み込み
     func roadPoints() -> Int {
@@ -94,15 +104,15 @@ class ViewController: UIViewController,UITextFieldDelegate {
     }
     
     // デバッグフィールド入力完了時の処理
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        textField.endEditing(true)
-        let s = pointDebug.text
-        if let newPoint = s {
-            settings.set(newPoint, forKey: "storePoints")
-        }
-        pointLabel.text = s
-        return true
-    }
+//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+//        textField.resignFirstResponder()
+//        textField.endEditing(true)
+//        let s = pointDebug.text
+//        if let newPoint = s {
+//            settings.set(newPoint, forKey: "storePoints")
+//        }
+//        pointLabel.text = s
+//        return true
+//    }
 }
 
