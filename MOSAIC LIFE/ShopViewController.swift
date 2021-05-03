@@ -74,17 +74,17 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         let targetCell = shopLists[sourceIndexPath.section].shopList[sourceIndexPath.row]
         shopLists[sourceIndexPath.section].shopList.remove(at: sourceIndexPath.row)
-        shopLists[sourceIndexPath.section].shopList.insert(targetCell, at: destinationIndexPath.row)
+        shopLists[destinationIndexPath.section].shopList.insert(targetCell, at: destinationIndexPath.row)
         saveTableViewData()
     }
     
-    //セル移動の制限: とりあえず同セクション間での移動のみに留める
-    func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
-        if sourceIndexPath.section == proposedDestinationIndexPath.section {
-            return proposedDestinationIndexPath
-        }
-        return sourceIndexPath
-    }
+//    //セル移動の制限: とりあえず同セクション間での移動のみに留める
+//    func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
+//        if sourceIndexPath.section == proposedDestinationIndexPath.section {
+//            return proposedDestinationIndexPath
+//        }
+//        return sourceIndexPath
+//    }
     /*
      セルを動かしてるとき、
      移動中セルのセクションとその真下のセルのセクションが一致している場合は空きセルの場所がproposedDestinationIndexPathになり、
@@ -167,6 +167,10 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     
     //MARK: - PickerView関連
 
+    // pickerViewの作成
+    let categorySelectPickerView = UIPickerView()
+    let categoryInsertPickerView = UIPickerView()
+    
     //pickerView: 何行？
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return shopLists.count
@@ -297,10 +301,9 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         
         //pickerViewに関する処理
         self.editingTextField = alert.textFields![2]
-        let pickerView = UIPickerView()
-        pickerView.dataSource = self
-        pickerView.delegate = self
-        pickerView.selectRow(0, inComponent: 0, animated: true)
+        categorySelectPickerView.dataSource = self
+        categorySelectPickerView.delegate = self
+        categorySelectPickerView.selectRow(0, inComponent: 0, animated: true)
 
         let toolbar = UIToolbar()
         let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonOnToolBarTapped(_:)))
@@ -309,7 +312,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
 
         //pickerViewに関する処理: 実装
         alert.textFields![2].inputAccessoryView = toolbar
-        alert.textFields![2].inputView = pickerView
+        alert.textFields![2].inputView = categorySelectPickerView
         
         //OKボタンを押した時の挙動
         let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
@@ -366,11 +369,31 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         alert.addTextField { (category: UITextField) -> Void in
             category.placeholder = "Category Name"
         }
+        alert.addTextField { (position: UITextField) -> Void in
+            position.placeholder = "Insert above..."
+        }
         
+        //pickerViewに関する処理
+        self.editingTextField = alert.textFields![1]
+        categoryInsertPickerView.dataSource = self
+        categoryInsertPickerView.delegate = self
+        categoryInsertPickerView.selectRow(0, inComponent: 0, animated: true)
+        
+        let toolbar = UIToolbar()
+        let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonOnToolBarTapped(_:)))
+        toolbar.setItems([doneButton], animated: true)
+        toolbar.sizeToFit()
+        
+        //pickerViewに関する処理: 実装
+        alert.textFields![1].inputAccessoryView = toolbar
+        alert.textFields![1].inputView = categoryInsertPickerView
+        
+        //OKボタンを押した時の挙動
         let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
             if let categoryText = alert.textFields![0].text {
+                self.shopLists.insert((shopList: [(item, pt)], categoryText), at: self.selectedSectionIndex)
+//                self.shopLists.append((shopList: [(item, pt)], categoryText))
                 self.shopLists.removeLast()
-                self.shopLists.append((shopList: [(item, pt)], categoryText))
                 self.tableView.reloadData()
                 self.saveTableViewData()
             } else {
