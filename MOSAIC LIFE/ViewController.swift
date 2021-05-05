@@ -4,18 +4,21 @@
 //
 //  Created by Toshiki Hanakawa on 2021/03/22.
 //
-// いぇーい見てる－？
 
 import UIKit
 
 class ViewController: UIViewController,UITextFieldDelegate {
     
     let settings = UserDefaults.standard
+    
     var gotPointArray = Array<(item:String, pt:Int)>()
     var usedPointArray = Array<(item:String, pt:Int)>()
+    
     var attrText = NSMutableAttributedString()
-    let date = Date()
-    let dateFormatter = DateFormatter()
+    
+    var buffArray = Array<Int>()
+    
+    //MARK: - ライフサイクル
     
     // 起動時処理
     override func viewDidLoad() {
@@ -33,50 +36,74 @@ class ViewController: UIViewController,UITextFieldDelegate {
         //残pt読み込み
         pointLabel.text = String(roadPoints())
         
-        //時刻フォーマット読み込み
-        dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "HHmm", options: 0, locale: Locale(identifier: "ja_JP"))
-        let time = dateFormatter.string(from: date)
+        //現在の日付をIntで取得
+        let now = Date()
+        let dateFormatter = DateFormatter()
         
-        //デバッグログ初期化
-        self.attrText = NSMutableAttributedString(string: "[\(time)] 現在: \(String(roadPoints()))pts\n")
-        debugLog.attributedText = attrText
+        dateFormatter.setLocalizedDateFormatFromTemplate("yyyy")
+        let year: Int = Int(dateFormatter.string(from: now))!
+        
+        dateFormatter.setLocalizedDateFormatFromTemplate("M")
+        let month: Int = Int(dateFormatter.string(from: now))!
+        
+        dateFormatter.setLocalizedDateFormatFromTemplate("d")
+        let day: Int = Int(dateFormatter.string(from: now))! + 1
+
+        //日付変更線の作成
+        let calendar = Calendar(identifier: .gregorian)
+        let dateBorder: Date! = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 4, minute: 0, second: 0))
+        
+        // テキストログ: AM4時を過ぎたら初期化、まだだったらuserDefaultsから読み込み
+        if now > dateBorder {
+            self.attrText = NSMutableAttributedString(string: "[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
+            debugLog.attributedText = attrText
+        } else {
+            if let archivedLog = settings.object(forKey: "DebugLog") {
+                let unarchivedText = try! NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(archivedLog as! Data) as! NSAttributedString
+                debugLog.attributedText = unarchivedText
+            } else {
+                self.attrText = NSMutableAttributedString(string: "読み込みに失敗しました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
+                debugLog.attributedText = attrText
+            }
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        pointLabel.text = String(roadPoints())
         
-        let time = dateFormatter.string(from: date)
+        //残りptを更新
+        pointLabel.text = String(roadPoints())
         
         // 交換画面での交換履歴をテキストログに表示
         if gotPointArray.isEmpty != true {
             for i in 0..<gotPointArray.count {
-                let gotPtText = NSMutableAttributedString(string: "[\(time)] +\(gotPointArray[i].pt)pt: \"\(gotPointArray[i].item)\"\n")
+                let gotPtText = NSMutableAttributedString(string: "[\(catchTime())] +\(gotPointArray[i].pt)pt: \"\(gotPointArray[i].item)\"\n")
                 gotPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.blue, range: NSMakeRange(0, gotPtText.length))
                 self.attrText.insert(gotPtText, at: attrText.length)
-//                debugLog.text += "「\(gotPointArray[i].item)」で\(gotPointArray[i].pt)pt獲得しました。\n"
             }
             gotPointArray.removeAll()
-            self.attrText.insert(NSMutableAttributedString(string: "[\(time)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
+            self.attrText.insert(NSMutableAttributedString(string: "[\(catchTime())] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
-//            debugLog.text += "現在: \(String(roadPoints()))pts\n"
         }
         
         // 購入画面での購入履歴をテキストログに表示
         if usedPointArray.isEmpty != true {
             for i in 0..<usedPointArray.count {
-                let consumedPtText = NSMutableAttributedString(string: "[\(time)] -\(usedPointArray[i].pt)pt: \"\(usedPointArray[i].item)\"\n")
+                let consumedPtText = NSMutableAttributedString(string: "[\(catchTime())] -\(usedPointArray[i].pt)pt: \"\(usedPointArray[i].item)\"\n")
                 consumedPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.red, range: NSMakeRange(0, consumedPtText.length))
                 self.attrText.insert(consumedPtText, at: attrText.length)
-//                debugLog.text += "「\(usedPointArray[i].item)」で\(usedPointArray[i].pt)pt消費しました。\n"
             }
             usedPointArray.removeAll()
-            self.attrText.insert(NSMutableAttributedString(string: "[\(time)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
+            self.attrText.insert(NSMutableAttributedString(string: "[\(catchTime())] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
-//            debugLog.text += "現在: \(String(roadPoints()))pts\n"
         }
+        
+        // テキストログをuserDefaultsに保存
+        let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
+        settings.set(archivedText, forKey: "DebugLog")
     }
 
-//    @IBOutlet weak var pointLabel: UILabel!
+    //MARK: - StoryBoard
+    
     @IBOutlet weak var pointLabel: UITextField!
     @IBOutlet weak var debugLog: UITextView!
     @IBOutlet weak var buffLog: UITextView!
@@ -84,13 +111,14 @@ class ViewController: UIViewController,UITextFieldDelegate {
     @IBAction func whenPointLabelEdited(_ sender: UITextField) {
         if pointLabel.text?.isEmpty != true {
             settings.set(pointLabel.text!, forKey: "storePoints")
-            self.attrText.insert(NSMutableAttributedString(string: "[\(dateFormatter.string(from: date))] 現在: \(pointLabel.text!)pts\n"), at: attrText.length)
+            self.attrText.insert(NSMutableAttributedString(string: "[\(catchTime())] 現在: \(pointLabel.text!)pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
         } else {
             pointLabel.text = String(roadPoints())
         }
     }
     
+    //MARK: - func
     // 現在ptを読み込み
     func roadPoints() -> Int {
         if settings.object(forKey: "storePoints") != nil {
@@ -102,17 +130,14 @@ class ViewController: UIViewController,UITextFieldDelegate {
         let roadPoint : Int = settings.integer(forKey: "storePoints")
         return roadPoint
     }
-    
-    // デバッグフィールド入力完了時の処理
-//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-//        textField.resignFirstResponder()
-//        textField.endEditing(true)
-//        let s = pointDebug.text
-//        if let newPoint = s {
-//            settings.set(newPoint, forKey: "storePoints")
-//        }
-//        pointLabel.text = s
-//        return true
-//    }
+
+    // 現在時刻を取得
+    func catchTime() -> String {
+        let date = Date()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "HHmm", options: 0, locale: Locale(identifier: "ja_JP"))
+        let time = dateFormatter.string(from: date)
+        return time
+    }
 }
 
