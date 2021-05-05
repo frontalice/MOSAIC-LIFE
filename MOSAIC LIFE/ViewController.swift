@@ -47,15 +47,30 @@ class ViewController: UIViewController,UITextFieldDelegate {
         let month: Int = Int(dateFormatter.string(from: now))!
         
         dateFormatter.setLocalizedDateFormatFromTemplate("d")
-        let day: Int = Int(dateFormatter.string(from: now))! + 1
+        var day: Int = Int(dateFormatter.string(from: now))!
+        
+        dateFormatter.setLocalizedDateFormatFromTemplate("H")
+        let hour: Int = Int(dateFormatter.string(from: now))!
+        
+        dateFormatter.setLocalizedDateFormatFromTemplate("m")
+        let minute: Int = Int(dateFormatter.string(from: now))!
+        
+        dateFormatter.setLocalizedDateFormatFromTemplate("s")
+        let second: Int = Int(dateFormatter.string(from: now))!
+        
+        if hour >= 4 && minute >= 0 && second >= 0 {
+            day += 1
+        }
 
         //日付変更線の作成
         let calendar = Calendar(identifier: .gregorian)
         let dateBorder: Date! = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 4, minute: 0, second: 0))
+        print(now)
+        print(dateBorder!)
         
         // テキストログ: AM4時を過ぎたら初期化、まだだったらuserDefaultsから読み込み
         if now > dateBorder {
-            self.attrText = NSMutableAttributedString(string: "[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
+            self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
             debugLog.attributedText = attrText
         } else {
             if let archivedLog = settings.object(forKey: "DebugLog") {
