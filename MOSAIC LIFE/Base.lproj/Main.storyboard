@@ -137,7 +137,7 @@
         <!--交換-->
         <scene sceneID="iFe-Ee-6X2">
             <objects>
-                <viewController id="ynp-vX-lGq" customClass="MissionViewController" customModule="MOSAIC_LIFE" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Mission" id="ynp-vX-lGq" customClass="MissionViewController" customModule="MOSAIC_LIFE" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Edm-us-sYp">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -244,6 +244,9 @@
                                     <segment title="交換"/>
                                     <segment title="購入"/>
                                 </segments>
+                                <connections>
+                                    <action selector="segConChanged:" destination="jW1-w7-ID4" eventType="valueChanged" id="k06-Uo-564"/>
+                                </connections>
                             </segmentedControl>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Rvs-Xe-D0d">
                                 <rect key="frame" x="20" y="96" width="335" height="400"/>
@@ -320,6 +323,9 @@
                                                             <constraint firstAttribute="width" constant="22" id="NEX-Y0-A46"/>
                                                         </constraints>
                                                         <state key="normal" backgroundImage="arrowtriangle.down.fill" catalog="system"/>
+                                                        <connections>
+                                                            <action selector="showDropDown:" destination="jW1-w7-ID4" eventType="touchUpInside" id="K7C-7X-DbM"/>
+                                                        </connections>
                                                     </button>
                                                 </subviews>
                                             </stackView>
@@ -384,8 +390,10 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="categoryLabel" destination="NAY-pt-1oy" id="y0l-AP-PcI"/>
                         <outlet property="dateLabel" destination="AFk-jq-Lhs" id="rVU-eM-xZA"/>
                         <outlet property="datePicker" destination="yus-dU-WhR" id="4Vt-Le-wAt"/>
+                        <outlet property="segmentedControl" destination="nYX-Ct-34G" id="YPC-Kf-obs"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gWw-GR-ePf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -395,7 +403,7 @@
         <!--購入-->
         <scene sceneID="2Lu-nD-VxF">
             <objects>
-                <viewController id="tNo-Dh-ts2" customClass="ShopViewController" customModule="MOSAIC_LIFE" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Shop" id="tNo-Dh-ts2" customClass="ShopViewController" customModule="MOSAIC_LIFE" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="uqs-TW-wn8">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

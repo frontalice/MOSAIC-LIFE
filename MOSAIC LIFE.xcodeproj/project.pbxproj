@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		21914C17C2AB196EF131710A /* Pods_MOSAIC_LIFE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 14FE18DDFD60A180CF144DD4 /* Pods_MOSAIC_LIFE.framework */; };
 		A841A22B2641119300A29A1A /* BuffModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A841A22A2641119300A29A1A /* BuffModalViewController.swift */; };
 		A842C600260888C10001750A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C5FF260888C10001750A /* AppDelegate.swift */; };
 		A842C602260888C10001750A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C601260888C10001750A /* SceneDelegate.swift */; };
@@ -20,6 +21,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		14FE18DDFD60A180CF144DD4 /* Pods_MOSAIC_LIFE.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MOSAIC_LIFE.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		26BEB7D05AB002F5E0BEFFDB /* Pods-MOSAIC LIFE.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MOSAIC LIFE.debug.xcconfig"; path = "Target Support Files/Pods-MOSAIC LIFE/Pods-MOSAIC LIFE.debug.xcconfig"; sourceTree = "<group>"; };
 		A841A22A2641119300A29A1A /* BuffModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuffModalViewController.swift; sourceTree = "<group>"; };
 		A842C5FC260888C10001750A /* MOSAIC LIFE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MOSAIC LIFE.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A842C5FF260888C10001750A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -32,6 +35,7 @@
 		A842C6142608C9F70001750A /* ShopViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopViewController.swift; sourceTree = "<group>"; };
 		A842C6172608CA0B0001750A /* MissionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionViewController.swift; sourceTree = "<group>"; };
 		A84A75D22642A45E00671616 /* CustomUILabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomUILabel.swift; sourceTree = "<group>"; };
+		C5639E77202F7FE34B2C6D22 /* Pods-MOSAIC LIFE.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MOSAIC LIFE.release.xcconfig"; path = "Target Support Files/Pods-MOSAIC LIFE/Pods-MOSAIC LIFE.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21914C17C2AB196EF131710A /* Pods_MOSAIC_LIFE.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -50,6 +55,8 @@
 			children = (
 				A842C5FE260888C10001750A /* MOSAIC LIFE */,
 				A842C5FD260888C10001750A /* Products */,
+				DB4373C94F351B27EDEFE203 /* Pods */,
+				C27A132DD17736A00D47E503 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -79,6 +86,23 @@
 			path = "MOSAIC LIFE";
 			sourceTree = "<group>";
 		};
+		C27A132DD17736A00D47E503 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				14FE18DDFD60A180CF144DD4 /* Pods_MOSAIC_LIFE.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DB4373C94F351B27EDEFE203 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				26BEB7D05AB002F5E0BEFFDB /* Pods-MOSAIC LIFE.debug.xcconfig */,
+				C5639E77202F7FE34B2C6D22 /* Pods-MOSAIC LIFE.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -86,9 +110,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A842C610260888C60001750A /* Build configuration list for PBXNativeTarget "MOSAIC LIFE" */;
 			buildPhases = (
+				01948DD23F5CEBFFAA83009D /* [CP] Check Pods Manifest.lock */,
 				A842C5F8260888C10001750A /* Sources */,
 				A842C5F9260888C10001750A /* Frameworks */,
 				A842C5FA260888C10001750A /* Resources */,
+				0E565B2F53DEBE0D160DA832 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -143,6 +169,48 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		01948DD23F5CEBFFAA83009D /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MOSAIC LIFE-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		0E565B2F53DEBE0D160DA832 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MOSAIC LIFE/Pods-MOSAIC LIFE-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MOSAIC LIFE/Pods-MOSAIC LIFE-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MOSAIC LIFE/Pods-MOSAIC LIFE-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A842C5F8260888C10001750A /* Sources */ = {
@@ -299,6 +367,7 @@
 		};
 		A842C611260888C60001750A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 26BEB7D05AB002F5E0BEFFDB /* Pods-MOSAIC LIFE.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -319,6 +388,7 @@
 		};
 		A842C612260888C60001750A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C5639E77202F7FE34B2C6D22 /* Pods-MOSAIC LIFE.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

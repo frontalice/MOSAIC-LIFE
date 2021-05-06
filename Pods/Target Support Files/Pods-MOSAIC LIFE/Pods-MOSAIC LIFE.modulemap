@@ -1,0 +1,6 @@
+framework module Pods_MOSAIC_LIFE {
+  umbrella header "Pods-MOSAIC LIFE-umbrella.h"
+
+  export *
+  module * { export * }
+}

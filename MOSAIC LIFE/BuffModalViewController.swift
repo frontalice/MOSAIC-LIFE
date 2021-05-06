@@ -6,21 +6,56 @@
 //
 
 import UIKit
+import DropDown
 
 class BuffModalViewController: UIViewController {
 
     let dateFormatter = DateFormatter()
+    let dropDown = DropDown()
+    var missionCategoryArray = Array<String>()
+    var shopCategoryArray = Array<String>()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let missionCategoryCount = UserDefaults.standard.integer(forKey: "categoryCount")
+        for i in 0..<missionCategoryCount {
+            missionCategoryArray.append(UserDefaults.standard.string(forKey: "categoryName\(String(i))")!)
+        }
+        
+        let shopCategoryCount = UserDefaults.standard.integer(forKey: "categoryCount_shop")
+        for i in 0..<shopCategoryCount {
+            shopCategoryArray.append(UserDefaults.standard.string(forKey: "categoryName\(String(i))_shop")!)
+        }
+        
+        segmentedControl.selectedSegmentIndex = 0
+        
+        initDropDown()
+        
+        categoryLabel.text = missionCategoryArray[0]
 
         // Do any additional setup after loading the view.
 //        datePicker.addTarget(self, action: #selector(writeLimitDate), for: .valueChanged)
+        
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "yyyy年M月d日"
         dateLabel.text = dateFormatter.string(from: datePicker.date)
+        
     }
     
+    func initDropDown(){
+        dropDown.anchorView = categoryLabel
+        if segmentedControl.selectedSegmentIndex == 0 {
+            dropDown.dataSource = missionCategoryArray
+        } else {
+            dropDown.dataSource = shopCategoryArray
+        }
+        print("対象の配列: \(dropDown.dataSource)")
+        dropDown.direction = .bottom
+        dropDown.selectionAction = { [unowned self] (index: Int, item: String) in
+            categoryLabel.text = item
+          }
+    }
 
     /*
     // MARK: - Navigation
@@ -32,6 +67,9 @@ class BuffModalViewController: UIViewController {
     }
     */
 
+   
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    @IBOutlet weak var categoryLabel: CustomUILabel!
     @IBOutlet weak var dateLabel: CustomUILabel!
     @IBOutlet weak var datePicker: UIDatePicker!
     
@@ -41,12 +79,20 @@ class BuffModalViewController: UIViewController {
     @IBAction func cancelButtonTapped(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
     }
+    @IBAction func segConChanged(_ sender: Any) {
+        if segmentedControl.selectedSegmentIndex == 0 {
+            categoryLabel.text = missionCategoryArray[0]
+        } else {
+            categoryLabel.text = shopCategoryArray[0]
+        }
+        initDropDown()
+    }
+    @IBAction func showDropDown(_ sender: Any) {
+        dropDown.show()
+    }
     @IBAction func dateChanged(_ sender: Any) {
         dateLabel.text = dateFormatter.string(from: datePicker.date)
     }
     
     
-//    @objc func writeLimitDate(){
-//        print()
-//    }
 }
