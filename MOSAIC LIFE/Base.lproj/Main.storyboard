@@ -337,7 +337,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AFk-jq-Lhs" customClass="CustomUILabel" customModule="MOSAIC_LIFE" customModuleProvider="target">
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AFk-jq-Lhs" customClass="CustomUILabel" customModule="MOSAIC_LIFE" customModuleProvider="target">
                                                 <rect key="frame" x="90" y="0.0" width="245" height="25"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="25" id="vaB-zA-mzo"/>
@@ -359,6 +359,9 @@
                                     <datePicker contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="date" style="wheels" translatesAutoresizingMaskIntoConstraints="NO" id="yus-dU-WhR">
                                         <rect key="frame" x="0.0" y="137" width="335" height="263"/>
                                         <locale key="locale" localeIdentifier="ja_JP"/>
+                                        <connections>
+                                            <action selector="dateChanged:" destination="jW1-w7-ID4" eventType="valueChanged" id="veD-6C-tck"/>
+                                        </connections>
                                     </datePicker>
                                 </subviews>
                                 <constraints>
@@ -381,6 +384,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="dateLabel" destination="AFk-jq-Lhs" id="rVU-eM-xZA"/>
                         <outlet property="datePicker" destination="yus-dU-WhR" id="4Vt-Le-wAt"/>
                     </connections>
                 </viewController>

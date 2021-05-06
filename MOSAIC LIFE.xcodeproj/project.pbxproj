@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A841A22B2641119300A29A1A /* BuffModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A841A22A2641119300A29A1A /* BuffModalViewController.swift */; };
 		A842C600260888C10001750A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C5FF260888C10001750A /* AppDelegate.swift */; };
 		A842C602260888C10001750A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C601260888C10001750A /* SceneDelegate.swift */; };
 		A842C604260888C10001750A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C603260888C10001750A /* ViewController.swift */; };
@@ -15,9 +16,11 @@
 		A842C60C260888C60001750A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A842C60A260888C60001750A /* LaunchScreen.storyboard */; };
 		A842C6152608C9F70001750A /* ShopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C6142608C9F70001750A /* ShopViewController.swift */; };
 		A842C6182608CA0B0001750A /* MissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C6172608CA0B0001750A /* MissionViewController.swift */; };
+		A84A75D32642A45E00671616 /* CustomUILabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A84A75D22642A45E00671616 /* CustomUILabel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A841A22A2641119300A29A1A /* BuffModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuffModalViewController.swift; sourceTree = "<group>"; };
 		A842C5FC260888C10001750A /* MOSAIC LIFE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MOSAIC LIFE.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A842C5FF260888C10001750A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A842C601260888C10001750A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -28,6 +31,7 @@
 		A842C60D260888C60001750A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A842C6142608C9F70001750A /* ShopViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopViewController.swift; sourceTree = "<group>"; };
 		A842C6172608CA0B0001750A /* MissionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionViewController.swift; sourceTree = "<group>"; };
+		A84A75D22642A45E00671616 /* CustomUILabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomUILabel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +69,8 @@
 				A842C603260888C10001750A /* ViewController.swift */,
 				A842C6142608C9F70001750A /* ShopViewController.swift */,
 				A842C6172608CA0B0001750A /* MissionViewController.swift */,
+				A841A22A2641119300A29A1A /* BuffModalViewController.swift */,
+				A84A75D22642A45E00671616 /* CustomUILabel.swift */,
 				A842C605260888C10001750A /* Main.storyboard */,
 				A842C608260888C60001750A /* Assets.xcassets */,
 				A842C60A260888C60001750A /* LaunchScreen.storyboard */,
@@ -144,6 +150,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				A842C6152608C9F70001750A /* ShopViewController.swift in Sources */,
+				A84A75D32642A45E00671616 /* CustomUILabel.swift in Sources */,
+				A841A22B2641119300A29A1A /* BuffModalViewController.swift in Sources */,
 				A842C604260888C10001750A /* ViewController.swift in Sources */,
 				A842C600260888C10001750A /* AppDelegate.swift in Sources */,
 				A842C602260888C10001750A /* SceneDelegate.swift in Sources */,
