@@ -211,7 +211,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         
         // リスト情報をmissionMemoryから読み込み
         let categoryCount: Int = userDefaults.integer(forKey: "categoryCount")
-        print("CategoryCount: \(categoryCount)")
+//        print("CategoryCount: \(categoryCount)")
         for i in 0..<categoryCount {
             if userDefaults.object(forKey: "missionMemory\(String(i))") != nil {
                 if let dicList = userDefaults.object(forKey: "missionMemory\(String(i))") as? [[String: Any]] {

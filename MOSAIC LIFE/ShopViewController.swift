@@ -215,7 +215,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         
         // リスト情報をmissionMemoryから読み込み
         let categoryCount: Int = userDefaults.integer(forKey: "categoryCount_shop")
-        print("CategoryCount: \(categoryCount)")
+//        print("CategoryCount: \(categoryCount)")
         for i in 0..<categoryCount {
             if userDefaults.object(forKey: "shopMemory\(String(i))") != nil {
                 if let dicList = userDefaults.object(forKey: "shopMemory\(String(i))") as? [[String: Any]] {

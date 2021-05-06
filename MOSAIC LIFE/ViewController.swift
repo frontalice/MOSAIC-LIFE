@@ -36,7 +36,38 @@ class ViewController: UIViewController,UITextFieldDelegate {
         //残pt読み込み
         pointLabel.text = String(roadPoints())
         
-        //現在の日付をIntで取得
+        let now = Date()
+        var dateBorder: Date
+        
+        if let savedDateBorder: Date = settings.object(forKey: "DateBorder") as! Date? {
+//            print(savedDateBorder)
+            dateBorder = savedDateBorder
+        } else {
+            dateBorder = reloadDateBorder()
+        }
+        
+        // テキストログ: AM4時を過ぎたら初期化、まだだったらuserDefaultsから読み込み
+        print("今: \(now)")
+        print("次: \(dateBorder)")
+        if now > dateBorder {
+            self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
+            debugLog.attributedText = attrText
+            dateBorder = reloadDateBorder()
+        } else {
+            if let archivedLog = settings.object(forKey: "DebugLog") {
+                let unarchivedText = try! NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(archivedLog as! Data) as! NSAttributedString
+                self.attrText = unarchivedText.mutableCopy() as! NSMutableAttributedString
+                debugLog.attributedText = attrText
+            } else {
+                self.attrText = NSMutableAttributedString(string: "読み込みに失敗しました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
+                debugLog.attributedText = attrText
+            }
+        }
+        
+        settings.set(dateBorder, forKey: "DateBorder")
+    }
+    
+    func reloadDateBorder() -> Date {
         let now = Date()
         let dateFormatter = DateFormatter()
         
@@ -61,26 +92,10 @@ class ViewController: UIViewController,UITextFieldDelegate {
         if hour >= 4 && minute >= 0 && second >= 0 {
             day += 1
         }
-
-        //日付変更線の作成
-        let calendar = Calendar(identifier: .gregorian)
-        let dateBorder: Date! = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 4, minute: 0, second: 0))
-        print(now)
-        print(dateBorder!)
         
-        // テキストログ: AM4時を過ぎたら初期化、まだだったらuserDefaultsから読み込み
-        if now > dateBorder {
-            self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
-            debugLog.attributedText = attrText
-        } else {
-            if let archivedLog = settings.object(forKey: "DebugLog") {
-                let unarchivedText = try! NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(archivedLog as! Data) as! NSAttributedString
-                debugLog.attributedText = unarchivedText
-            } else {
-                self.attrText = NSMutableAttributedString(string: "読み込みに失敗しました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
-                debugLog.attributedText = attrText
-            }
-        }
+        let calendar = Calendar(identifier: .gregorian)
+        let dateBorder = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 4, minute: 0, second: 0))!
+        return dateBorder
     }
     
     override func viewWillAppear(_ animated: Bool) {
