@@ -77,22 +77,30 @@ class BuffModalViewController: UIViewController {
     @IBOutlet weak var datePicker: UIDatePicker!
     
     @IBAction func doneButtonTapped(_ sender: Any) {
-        if let magString = magnificationLabel.text {
-            if let buffName = nameLabel.text, let category = categoryLabel.text {
-                buffArray.append((buffName, NSString(string: magString).floatValue, category, datePicker.date))
+        if self.magnificationLabel.text!.isEmpty == false {
+            if nameLabel.text!.isEmpty == false && categoryLabel.text!.isEmpty == false {
+                buffArray.append((nameLabel.text!, NSString(string: magnificationLabel.text!).floatValue, categoryLabel.text!, datePicker.date))
                 let convertedList: [[String: Any]] = buffArray.map{["name": $0.buffName, "mag": $0.magnification, "category": $0.category, "date": $0.date]}
                 UserDefaults.standard.set(convertedList, forKey: "buffData")
                 print(UserDefaults.standard.object(forKey: "buffData")!)
                 
-                /* self.dismiss(animated: true) {
-                    let mainVC = self.presentingViewController as! ViewController
-                    self.dateFormatter.dateFormat = "MM/dd"
-                    let date = self.dateFormatter.string(from: self.datePicker.date)
-                    mainVC.buffLog.text = "[\(date)] 「\(self.nameLabel.text!)」が<\(self.categoryLabel.text!)>で発動中"
-                } */
+                let nc = self.presentingViewController as! UINavigationController
+                print(nc.viewControllers[0])
+                let mainVC = nc.viewControllers[0] as! ViewController
+                self.dateFormatter.dateFormat = "MM/dd"
+                let date = self.dateFormatter.string(from: self.datePicker.date)
+                mainVC.buffLog.text = "[\(date)] \"\(self.nameLabel.text!)\"が<\(self.categoryLabel.text!)>で発動中(x\(magnificationLabel.text!))"
+                
+                self.dismiss(animated: true) {
+//                    print(self.presentingViewController)
+//                    let mainVC = self.presentingViewController as! ViewController
+//                    self.dateFormatter.dateFormat = "MM/dd"
+//                    let date = self.dateFormatter.string(from: self.datePicker.date)
+//                    mainVC.buffLog.text = "[\(date)] 「\(self.nameLabel.text!)」が<\(self.categoryLabel.text!)>で発動中"
+                }
             }
         }
-        self.dismiss(animated: true, completion: nil)
+//        self.dismiss(animated: true, completion: nil)
     }
     @IBAction func cancelButtonTapped(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
