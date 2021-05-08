@@ -94,7 +94,7 @@
                                         </constraints>
                                         <state key="normal" title="Buff"/>
                                         <connections>
-                                            <segue destination="jW1-w7-ID4" kind="presentation" id="kmn-uu-1JX"/>
+                                            <segue destination="jW1-w7-ID4" kind="presentation" identifier="mainToModal" id="kmn-uu-1JX"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -389,6 +389,8 @@
                         <outlet property="categoryLabel" destination="NAY-pt-1oy" id="y0l-AP-PcI"/>
                         <outlet property="dateLabel" destination="AFk-jq-Lhs" id="rVU-eM-xZA"/>
                         <outlet property="datePicker" destination="yus-dU-WhR" id="4Vt-Le-wAt"/>
+                        <outlet property="magnificationLabel" destination="WOB-Bf-964" id="dIK-qB-Yl5"/>
+                        <outlet property="nameLabel" destination="wxt-Is-6Lp" id="Svw-FN-BaO"/>
                         <outlet property="segmentedControl" destination="nYX-Ct-34G" id="YPC-Kf-obs"/>
                     </connections>
                 </viewController>

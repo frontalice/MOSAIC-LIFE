@@ -14,6 +14,7 @@ class BuffModalViewController: UIViewController {
     let dropDown = DropDown()
     var missionCategoryArray = Array<String>()
     var shopCategoryArray = Array<String>()
+    var buffArray: [(buffName: String, magnification: Float, category: String, date: Date)] = Array<(String, Float, String, Date)>()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,11 +70,28 @@ class BuffModalViewController: UIViewController {
 
    
     @IBOutlet weak var segmentedControl: UISegmentedControl!
+    @IBOutlet weak var nameLabel: UITextField!
+    @IBOutlet weak var magnificationLabel: UITextField!
     @IBOutlet weak var categoryLabel: CustomUILabel!
     @IBOutlet weak var dateLabel: CustomUILabel!
     @IBOutlet weak var datePicker: UIDatePicker!
     
     @IBAction func doneButtonTapped(_ sender: Any) {
+        if let magString = magnificationLabel.text {
+            if let buffName = nameLabel.text, let category = categoryLabel.text {
+                buffArray.append((buffName, NSString(string: magString).floatValue, category, datePicker.date))
+                let convertedList: [[String: Any]] = buffArray.map{["name": $0.buffName, "mag": $0.magnification, "category": $0.category, "date": $0.date]}
+                UserDefaults.standard.set(convertedList, forKey: "buffData")
+                print(UserDefaults.standard.object(forKey: "buffData")!)
+                
+                /* self.dismiss(animated: true) {
+                    let mainVC = self.presentingViewController as! ViewController
+                    self.dateFormatter.dateFormat = "MM/dd"
+                    let date = self.dateFormatter.string(from: self.datePicker.date)
+                    mainVC.buffLog.text = "[\(date)] 「\(self.nameLabel.text!)」が<\(self.categoryLabel.text!)>で発動中"
+                } */
+            }
+        }
         self.dismiss(animated: true, completion: nil)
     }
     @IBAction func cancelButtonTapped(_ sender: Any) {
@@ -94,5 +112,11 @@ class BuffModalViewController: UIViewController {
         dateLabel.text = dateFormatter.string(from: datePicker.date)
     }
     
-    
+    //　アラート: エラー表示
+    func showAlert(_ message: String){
+        let alert : UIAlertController = UIAlertController(title: "警告", message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "はい", style: .default, handler: nil)
+        alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
+    }
 }
