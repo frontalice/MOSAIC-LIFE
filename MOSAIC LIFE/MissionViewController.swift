@@ -44,6 +44,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     override func setEditing(_ editing: Bool, animated: Bool) {
         super .setEditing(editing, animated: true)
         self.tableView.setEditing(editing, animated: true)
+        disableGlassMode()
     }
     
     //削除できるセル: 全部
@@ -93,18 +94,23 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     // isEditing = true:  既存セルの編集
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !self.tableView.isEditing {
+            
             //userDefaultsに残ptのデータを保存
             let setting = UserDefaults.standard
             var presentPoint: Int = setting.integer(forKey: "storePoints")
             let missionItem: String = missionLists[indexPath.section].missionList[indexPath.row].mission
             let missionPoint: Int = missionLists[indexPath.section].missionList[indexPath.row].pt
+            
             presentPoint += missionPoint
             setting.set(presentPoint, forKey: "storePoints")
             setting.synchronize()
+            
             //画面左下のラベルを更新
-            pointLabel.text = String(presentPoint)
+            pointLabel.title = "\(String(presentPoint)) pt"
+            
             //獲得履歴を更新
             exchangedPtHistory.append((missionItem,missionPoint))
+            
             //選択エフェクトを解除
             tableView.deselectRow(at: indexPath, animated: true)
         } else {
@@ -239,12 +245,16 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         //編集中でもセルを選択できるようにする
         self.tableView.allowsSelectionDuringEditing = true
         
-        // 残りptとチケット数を取得
+        // 残りptを取得
         let setting = UserDefaults.standard
         let presentPoint: Int = setting.integer(forKey: "storePoints")
-        pointLabel.text = String(presentPoint)
-//        let presentTickets: Int = setting.integer(forKey: "storeTickets")
-//        ticketLabel.text = String(presentTickets)
+        pointLabel.title = "\(String(presentPoint)) pt"
+        
+        //グラスモード -> false
+        glassModeIsEnabled = false
+        glassButton.tintColor = .systemGray
+//        print("glass mode is \(glassModeIsEnabled)")
+
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -261,25 +271,31 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         }
         //ptHistoryの初期化
         exchangedPtHistory.removeAll()
-//        print("History Cleared")
-        //リスト情報の保存
-//        for i in 0..<missionLists.count {
-//            let convertedList: [[String: Any]] = missionLists[i].missionList.map{["mission": $0.mission, "pt": $0.pt]}
-//            userDefaults.set(convertedList, forKey: "missionMemory\(String(i))")
-//            userDefaults.set(missionLists[i].listName, forKey: "categoryName\(String(i))")
-//            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("missionMemory") })
-//        }
-//        userDefaults.set(missionLists.count, forKey: "categoryCount")
+        
+        //バフされたptの初期化
+        if glassModeIsEnabled == true {
+            for i in 0..<missionLists.count {
+                if missionLists[i].listName.contains("Coding") {
+                    for n in 0..<missionLists[i].missionList.count {
+                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) / 1.1)
+                    }
+                }
+            }
+        }
+
     }
 
     //MARK: - StoryBoard
-    @IBOutlet weak var pointLabel: UILabel!
-//    @IBOutlet weak var ticketLabel: UILabel!
+    @IBOutlet weak var pointLabel: UIBarLabel!
+    @IBOutlet weak var glassButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     
     //MARK: - UI部品
     //ミッションを追加: alertで入力
     @objc func plusButtonTapped(_ sender: UIBarButtonItem){
+        
+        disableGlassMode()
+        
         let alert = UIAlertController(title: "Todoの追加", message: "ToDo名と報酬ptを入力", preferredStyle: .alert)
         
         alert.addTextField { (mission: UITextField) -> Void in
@@ -341,15 +357,49 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         present(alert, animated: true, completion: nil)
     }
     
-    // ソートボタン: 降順で並び替え
-//    @objc func sortButtonTapped(_ sender: UIBarButtonItem){
-//        for i in 0..<missionLists.count {
-//            missionLists[i].missionList.sort{(A,B) -> Bool in
-//                return A.pt > B.pt
-//            }
-//        }
-//        self.tableView.reloadData()
-//    }
+    var glassModeIsEnabled : Bool = false
+    
+    func disableGlassMode(){
+        if glassModeIsEnabled == true {
+            glassModeIsEnabled = false
+            glassButton.tintColor = .systemGray
+            for i in 0..<missionLists.count {
+                if missionLists[i].listName.contains("Coding") {
+                    for n in 0..<missionLists[i].missionList.count {
+                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) / 1.1)
+                    }
+                    tableView.reloadData()
+                }
+            }
+        }
+    }
+    
+    @IBAction func glassButtonTapped(_ sender: Any) {
+        glassModeIsEnabled = !glassModeIsEnabled
+//        print("glass button tapped, glassmode is \(glassModeIsEnabled)")
+        
+        if glassModeIsEnabled == true {
+            glassButton.tintColor = .systemBlue
+            for i in 0..<missionLists.count {
+                if missionLists[i].listName.contains("Coding") {
+                    for n in 0..<missionLists[i].missionList.count {
+                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) * 1.1)
+                    }
+                    tableView.reloadData()
+                }
+            }
+        } else {
+            glassButton.tintColor = .systemGray
+            for i in 0..<missionLists.count {
+                if missionLists[i].listName.contains("Coding") {
+                    for n in 0..<missionLists[i].missionList.count {
+                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) / 1.1)
+                    }
+                    tableView.reloadData()
+                }
+            }
+        }
+    }
     
     //　アラート: エラー表示
     func showAlert(_ message: String){

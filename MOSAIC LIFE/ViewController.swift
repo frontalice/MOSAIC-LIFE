@@ -106,7 +106,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
         // 交換画面での交換履歴をテキストログに表示
         if gotPointArray.isEmpty != true {
             for i in 0..<gotPointArray.count {
-                let gotPtText = NSMutableAttributedString(string: "[\(catchTime())] +\(gotPointArray[i].pt)pt: \"\(gotPointArray[i].item)\"\n")
+                let gotPtText = NSMutableAttributedString(string: "[\(catchTime())] +\(gotPointArray[i].pt)pt: \(gotPointArray[i].item)\n")
                 gotPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.blue, range: NSMakeRange(0, gotPtText.length))
                 self.attrText.insert(gotPtText, at: attrText.length)
             }
@@ -118,7 +118,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
         // 購入画面での購入履歴をテキストログに表示
         if usedPointArray.isEmpty != true {
             for i in 0..<usedPointArray.count {
-                let consumedPtText = NSMutableAttributedString(string: "[\(catchTime())] -\(usedPointArray[i].pt)pt: \"\(usedPointArray[i].item)\"\n")
+                let consumedPtText = NSMutableAttributedString(string: "[\(catchTime())] -\(usedPointArray[i].pt)pt: \(usedPointArray[i].item)\n")
                 consumedPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.red, range: NSMakeRange(0, consumedPtText.length))
                 self.attrText.insert(consumedPtText, at: attrText.length)
             }

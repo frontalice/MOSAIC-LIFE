@@ -46,6 +46,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     override func setEditing(_ editing: Bool, animated: Bool) {
         super .setEditing(editing, animated: true)
         self.tableView.setEditing(editing, animated: true)
+        disableGlassMode()
     }
     
     //削除できるセル: 全部
@@ -95,18 +96,23 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     // isEditing = true:  既存セルの編集
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !self.tableView.isEditing {
+            
             //userDefaultsに残ptのデータを保存
             let setting = UserDefaults.standard
             var presentPoint: Int = setting.integer(forKey: "storePoints")
             let consumeItem: String = shopLists[indexPath.section].shopList[indexPath.row].item
             let consumePoint: Int = shopLists[indexPath.section].shopList[indexPath.row].pt
+            
             presentPoint -= consumePoint
             setting.set(presentPoint, forKey: "storePoints")
             setting.synchronize()
+            
             // 画面左下のラベルを更新
-            pointLabel.text = String(presentPoint)
+            pointLabel.title = "\(String(presentPoint)) pt"
+            
             //消費履歴を更新
             consumedPtHistory.append((consumeItem,consumePoint))
+            
             //選択エフェクトを解除
             tableView.deselectRow(at: indexPath, animated: true)
         } else {
@@ -243,12 +249,15 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         //編集中でもセルを選択できるようにする
         self.tableView.allowsSelectionDuringEditing = true
         
-        // 残りptとチケット数を取得
+        // 残りptを取得
         let setting = UserDefaults.standard
         let presentPoint: Int = setting.integer(forKey: "storePoints")
-        pointLabel.text = String(presentPoint)
-//        let presentTickets: Int = setting.integer(forKey: "storeTickets")
-//        ticketLabel.text = String(presentTickets)
+        pointLabel.title = "\(String(presentPoint)) pt"
+        
+        //グラスモード -> false
+        glassModeIsEnabled = false
+        glassButton.tintColor = .systemGray
+//        print("glass mode is \(glassModeIsEnabled)")
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -265,26 +274,30 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         }
         //ptHistoryの初期化
         consumedPtHistory.removeAll()
-        //リスト情報の保存
-//        for i in 0..<shopLists.count {
-//            let convertedList: [[String: Any]] = shopLists[i].shopList.map{["item": $0.item, "pt": $0.pt]}
-//            userDefaults.set(convertedList, forKey: "shopMemory\(String(i))")
-//            userDefaults.set(shopLists[i].listName, forKey: "categoryName\(String(i))_shop")
-////            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("shopMemory") })
-//        }
-//        userDefaults.set(shopLists.count, forKey: "categoryCount_shop")
+        
+        //バフされたptの初期化
+        if glassModeIsEnabled == true {
+            for i in 0..<shopLists.count {
+                if shopLists[i].listName.contains("Coding") {
+                    for n in 0..<shopLists[i].shopList.count {
+                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 0.9)
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - StoryBoard
 
-    @IBOutlet weak var pointLabel: UILabel!
-//    @IBOutlet weak var ticketLabel: UILabel!
+    @IBOutlet weak var pointLabel: UIBarLabel!
+    @IBOutlet weak var glassButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     
     //MARK: - UI部品
     
     //ミッションを追加: alertで入力
     @objc func plusButtonTapped(_ sender: UIBarButtonItem){
+        disableGlassMode()
         let alert = UIAlertController(title: "Itemの追加", message: "Item名と消費ptを入力", preferredStyle: .alert)
         alert.addTextField { (item: UITextField) -> Void in
             item.placeholder = "Item Name"
@@ -345,15 +358,49 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         present(alert, animated: true, completion: nil)
     }
     
-    // ソートボタン: 降順で並び替え
-//    @objc func sortButtonTapped(_ sender: UIBarButtonItem){
-//        for i in 0..<shopLists.count {
-//            shopLists[i].shopList.sort{(A,B) -> Bool in
-//                return A.pt > B.pt
-//            }
-//        }
-//        self.tableView.reloadData()
-//    }
+    var glassModeIsEnabled : Bool = false
+    
+    func disableGlassMode(){
+        if glassModeIsEnabled == true {
+            glassModeIsEnabled = false
+            for i in 0..<shopLists.count {
+                if shopLists[i].listName.contains("Gaming") {
+                    for n in 0..<shopLists[i].shopList.count {
+                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 0.9)
+                    }
+                    tableView.reloadData()
+                }
+            }
+        }
+    }
+    
+    @IBAction func glassButtonTapped(_ sender: Any) {
+        glassModeIsEnabled = !glassModeIsEnabled
+//        print("glass button tapped, glassmode is \(glassModeIsEnabled)")
+        
+        if glassModeIsEnabled == true {
+            glassButton.tintColor = .systemBlue
+            for i in 0..<shopLists.count {
+                if shopLists[i].listName.contains("Gaming") {
+                    for n in 0..<shopLists[i].shopList.count {
+                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) * 0.9)
+                    }
+                    tableView.reloadData()
+//                    print(shopLists[i].shopList)
+                }
+            }
+        } else {
+            glassButton.tintColor = .systemGray
+            for i in 0..<shopLists.count {
+                if shopLists[i].listName.contains("Gaming") {
+                    for n in 0..<shopLists[i].shopList.count {
+                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 0.9)
+                    }
+                    tableView.reloadData()
+                }
+            }
+        }
+    }
     
     //　アラート: エラー表示
     func showAlert(_ message: String){
