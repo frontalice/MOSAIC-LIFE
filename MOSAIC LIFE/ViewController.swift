@@ -134,29 +134,79 @@ class ViewController: UIViewController,UITextFieldDelegate {
     }
     
     func writeDebugLog(){
+        let timeString = catchTime()
+        
+        let presentTime = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "H"
+        let ptHour = formatter.string(from: presentTime)
+        var presentHour = Int(ptHour)!
+        if presentHour <= 3 {
+            switch presentHour {
+            case 0:
+                presentHour = 24
+            case 1:
+                presentHour = 25
+            case 2:
+                presentHour = 26
+            case 3:
+                presentHour = 27
+            default:
+                break
+            }
+        }
+            print(presentHour)
+        
+        let lstHour = settings.string(forKey: "timeForDivideLine") ?? ptHour
+        var lastHour = Int(lstHour)!
+        if lastHour <= 3 {
+            switch lastHour {
+            case 0:
+                lastHour = 24
+            case 1:
+                lastHour = 25
+            case 2:
+                lastHour = 26
+            case 3:
+                lastHour = 27
+            default:
+                break
+            }
+        }
+            print(lastHour)
+        
+        
         // 交換画面での交換履歴をテキストログに表示
         if gotPointArray.isEmpty != true {
+            if presentHour > lastHour {
+                self.attrText.insert(NSAttributedString(string: "--------------------------------------------------------\n"), at: attrText.length)
+            }
             for i in 0..<gotPointArray.count {
-                let gotPtText = NSMutableAttributedString(string: "[\(catchTime())] +\(gotPointArray[i].pt)pt: \(gotPointArray[i].item)\n")
+                let gotPtText = NSMutableAttributedString(string: "[\(timeString)] +\(gotPointArray[i].pt)pt: \(gotPointArray[i].item)\n")
                 gotPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.blue, range: NSMakeRange(0, gotPtText.length))
                 self.attrText.insert(gotPtText, at: attrText.length)
             }
             gotPointArray.removeAll()
-            self.attrText.insert(NSMutableAttributedString(string: "[\(catchTime())] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
+            self.attrText.insert(NSMutableAttributedString(string: "[\(timeString)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
         }
         
         // 購入画面での購入履歴をテキストログに表示
         if usedPointArray.isEmpty != true {
+            if presentHour > lastHour {
+                self.attrText.insert(NSAttributedString(string: "--------------------------------------------------------\n"), at: attrText.length)
+            }
             for i in 0..<usedPointArray.count {
-                let consumedPtText = NSMutableAttributedString(string: "[\(catchTime())] -\(usedPointArray[i].pt)pt: \(usedPointArray[i].item)\n")
+                let consumedPtText = NSMutableAttributedString(string: "[\(timeString)] -\(usedPointArray[i].pt)pt: \(usedPointArray[i].item)\n")
                 consumedPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.red, range: NSMakeRange(0, consumedPtText.length))
                 self.attrText.insert(consumedPtText, at: attrText.length)
             }
             usedPointArray.removeAll()
-            self.attrText.insert(NSMutableAttributedString(string: "[\(catchTime())] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
+            self.attrText.insert(NSMutableAttributedString(string: "[\(timeString)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
         }
+        
+        settings.set(presentHour, forKey: "timeForDivideLine")
     }
     
     func writeBuffLog(){
@@ -183,9 +233,15 @@ class ViewController: UIViewController,UITextFieldDelegate {
         }
     }
     @IBAction func clearButtonTapped(_ sender: Any) {
-        settings.removeObject(forKey: "buffData")
-        buffArray = Array<(String, Float, String, Date)>()
-        buffLog.text.removeAll()
+        let alert : UIAlertController = UIAlertController(title: nil, message: "初期化してもいい？", preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction!) -> Void in
+            self.settings.removeObject(forKey: "buffData")
+            self.buffArray = Array<(String, Float, String, Date)>()
+            self.buffLog.text.removeAll()
+        }
+        alert.addAction(okAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
     }
     
     //MARK: - func

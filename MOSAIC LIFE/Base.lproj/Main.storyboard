@@ -157,6 +157,7 @@
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XUD-TY-MPW">
                                 <rect key="frame" x="0.0" y="623" width="375" height="44"/>
                                 <items>
+                                    <barButtonItem width="10" style="plain" systemItem="fixedSpace" id="UV4-GH-hFw"/>
                                     <barButtonItem title="Item" id="IXI-jc-CT3" customClass="UIBarLabel" customModule="MOSAIC_LIFE" customModuleProvider="target"/>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="pV0-ls-CBK"/>
                                     <barButtonItem style="plain" id="wWZ-jM-mTh">
