@@ -110,8 +110,15 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             // 画面左下のラベルを更新
             pointLabel.title = "\(String(presentPoint)) pt"
             
+            //ライフログを直接更新
+            //メイン画面vcにexchangedPtHistoryを渡す
+            let nvc = self.navigationController!
+            let vc = nvc.viewControllers[0] as! ViewController
+            vc.usedPointArray.append((consumeItem, consumePoint))
+            vc.writeDebugLog()
+            
             //消費履歴を更新
-            consumedPtHistory.append((consumeItem,consumePoint))
+//            consumedPtHistory.append((consumeItem,consumePoint))
             
             //選択エフェクトを解除
             tableView.deselectRow(at: indexPath, animated: true)

@@ -108,8 +108,17 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             //画面左下のラベルを更新
             pointLabel.title = "\(String(presentPoint)) pt"
             
-            //獲得履歴を更新
-            exchangedPtHistory.append((missionItem,missionPoint))
+            //ライフログを直接更新
+            //メイン画面vcにexchangedPtHistoryを渡す
+            let nvc = self.navigationController!
+            let vc = nvc.viewControllers[0] as! ViewController
+            vc.gotPointArray.append((missionItem, missionPoint))
+            vc.writeDebugLog()
+
+            //ptHistoryの初期化
+//            exchangedPtHistory.removeAll()
+            
+//            exchangedPtHistory.append((missionItem,missionPoint))
             
             //選択エフェクトを解除
             tableView.deselectRow(at: indexPath, animated: true)
@@ -262,16 +271,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        //メイン画面vcにexchangedPtHistoryを渡す
-        let nvc = self.navigationController!
-        let vc = nvc.viewControllers[0] as! ViewController
-        for i in 0..<exchangedPtHistory.count {
-            vc.gotPointArray.append(exchangedPtHistory[i])
-//            print(element)
-        }
-        //ptHistoryの初期化
-        exchangedPtHistory.removeAll()
-        
         //バフされたptの初期化
         if glassModeIsEnabled == true {
             for i in 0..<missionLists.count {

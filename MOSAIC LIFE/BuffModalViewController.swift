@@ -19,6 +19,14 @@ class BuffModalViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //倍率入力用キーボードにdoneボタンを追加
+        let toolbar = UIToolbar()
+        let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonOnToolBarTapped(_:)))
+        toolbar.setItems([doneButton], animated: true)
+        toolbar.sizeToFit()
+        magnificationLabel.inputAccessoryView = toolbar
+        
+        // カテゴリ名の取得
         let missionCategoryCount = UserDefaults.standard.integer(forKey: "categoryCount")
         for i in 0..<missionCategoryCount {
             missionCategoryArray.append(UserDefaults.standard.string(forKey: "categoryName\(String(i))")!)
@@ -29,10 +37,13 @@ class BuffModalViewController: UIViewController {
             shopCategoryArray.append(UserDefaults.standard.string(forKey: "categoryName\(String(i))_shop")!)
         }
         
+        // セグメントコントロールの初期化
         segmentedControl.selectedSegmentIndex = 0
         
+        // DropDownの初期化
         initDropDown()
         
+        //カテゴリラベルの初期化
         categoryLabel.text = missionCategoryArray[0]
 
         // Do any additional setup after loading the view.
@@ -83,20 +94,28 @@ class BuffModalViewController: UIViewController {
     @IBOutlet weak var datePicker: UIDatePicker!
     
     @IBAction func doneButtonTapped(_ sender: Any) {
-        if self.magnificationLabel.text!.isEmpty == false {
-            if nameLabel.text!.isEmpty == false && categoryLabel.text!.isEmpty == false {
-                buffArray.append((nameLabel.text!, NSString(string: magnificationLabel.text!).floatValue, categoryLabel.text!, datePicker.date))
-                print("Done後: \(buffArray)")
-                let convertedList: [[String: Any]] = buffArray.map{["name": $0.buffName, "mag": $0.magnification, "category": $0.category, "date": $0.date]}
-                UserDefaults.standard.set(convertedList, forKey: "buffData")
-                print(UserDefaults.standard.object(forKey: "buffData")!)
-                let nc = self.presentingViewController as! UINavigationController
-                let mainVC = nc.viewControllers[0] as! ViewController
-                dateFormatter.dateFormat = "MM/dd"
-                let date = self.dateFormatter.string(from: self.datePicker.date)
-                mainVC.buffLog.text += "[\(date)] \"\(self.nameLabel.text!)\"が<\(self.categoryLabel.text!)>で発動中(x\(self.magnificationLabel.text!))\n"
-                self.dismiss(animated: true, completion: nil)
+        if nameLabel.text!.isEmpty == false && self.magnificationLabel.text!.isEmpty == false && categoryLabel.text!.isEmpty == false {
+            if let decimal = Decimal(string: magnificationLabel.text!) {
+                if decimal != 0 {
+                    buffArray.append((nameLabel.text!, NSString(string: magnificationLabel.text!).floatValue, categoryLabel.text!, datePicker.date))
+                    print("Done後: \(buffArray)")
+                    let convertedList: [[String: Any]] = buffArray.map{["name": $0.buffName, "mag": $0.magnification, "category": $0.category, "date": $0.date]}
+                    UserDefaults.standard.set(convertedList, forKey: "buffData")
+                    print(UserDefaults.standard.object(forKey: "buffData")!)
+                    let nc = self.presentingViewController as! UINavigationController
+                    let mainVC = nc.viewControllers[0] as! ViewController
+                    dateFormatter.dateFormat = "MM/dd"
+                    let date = self.dateFormatter.string(from: self.datePicker.date)
+                    mainVC.buffLog.text += "[\(date)] \"\(self.nameLabel.text!)\"が<\(self.categoryLabel.text!)>で発動中(x\(self.magnificationLabel.text!))\n"
+                    self.dismiss(animated: true, completion: nil)
+                } else {
+                    showAlert("不正な入力です")
+                }
+            } else {
+                showAlert("不正な入力です")
             }
+        } else {
+            showAlert("不正な入力です")
         }
 //        self.dismiss(animated: true, completion: nil)
     }
@@ -111,6 +130,11 @@ class BuffModalViewController: UIViewController {
         }
         initDropDown()
     }
+    
+    @objc func doneButtonOnToolBarTapped(_ sender: UIBarButtonItem){
+        magnificationLabel.endEditing(true)
+    }
+    
     @IBAction func showDropDown(_ sender: Any) {
         dropDown.show()
     }

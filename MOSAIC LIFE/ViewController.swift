@@ -126,11 +126,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
         //残りptを更新
         pointLabel.text = String(roadPoints())
         
-        writeDebugLog()
-        
-        // テキストログをuserDefaultsに保存
-        let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
-        settings.set(archivedText, forKey: "DebugLog")
+//        writeDebugLog()
     }
     
     func writeDebugLog(){
@@ -155,9 +151,10 @@ class ViewController: UIViewController,UITextFieldDelegate {
                 break
             }
         }
-            print(presentHour)
+        print("presentHour: \(presentHour)")
         
         let lstHour = settings.string(forKey: "timeForDivideLine") ?? ptHour
+        print("memoryHour: \(lstHour)")
         var lastHour = Int(lstHour)!
         if lastHour <= 3 {
             switch lastHour {
@@ -173,7 +170,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
                 break
             }
         }
-            print(lastHour)
+        print("lastHour: \(lastHour)\n-------------------")
         
         
         // 交換画面での交換履歴をテキストログに表示
@@ -206,7 +203,13 @@ class ViewController: UIViewController,UITextFieldDelegate {
             debugLog.attributedText = self.attrText
         }
         
+//        print("\(debugLog.attributedText!)\n------------------------------------")
+        
         settings.set(presentHour, forKey: "timeForDivideLine")
+        
+        // テキストログをuserDefaultsに保存
+        let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
+        settings.set(archivedText, forKey: "DebugLog")
     }
     
     func writeBuffLog(){
