@@ -16,6 +16,10 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 //    var missionList = [(mission: String, pt: Int)]()
     var exchangedPtHistory = Array<(item:String, pt:Int)>()
     
+    var buffArray: [(buffName: String, magnification: Float, category: String, date: Date)] = Array<(String, Float, String, Date)>()
+    
+    var isBuffApplicated: Bool = false
+    
     //MARK: - TableView関連
     //セクション数
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -226,7 +230,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         
         // リスト情報をmissionMemoryから読み込み
         let categoryCount: Int = userDefaults.integer(forKey: "categoryCount")
-//        print("CategoryCount: \(categoryCount)")
         for i in 0..<categoryCount {
             if userDefaults.object(forKey: "missionMemory\(String(i))") != nil {
                 if let dicList = userDefaults.object(forKey: "missionMemory\(String(i))") as? [[String: Any]] {
@@ -239,9 +242,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                     if let listName = userDefaults.string(forKey: "categoryName\(String(i))") {
                         self.missionLists[i].listName = listName
                     } else {
-                        continue
+                        self.missionLists[i].listName = "UnnamedCategory\(String(i))"
                     }
-    //                print(missionList)
                 }
             } else {
                 //保存データが無い場合、アラート表示
@@ -249,6 +251,24 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             }
         }
         
+        // バフ: userDefaultsから取得
+        if let dicList = userDefaults.object(forKey: "buffData") as? [[String : Any]] {
+            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! Float, category: $0["category"] as! String, date: $0["date"] as! Date)}
+            if !buffArray.isEmpty {
+                isBuffApplicated = true
+                let buffedCategory = buffArray.map{$0.category}
+                for i in 0..<missionLists.count {
+                    if buffedCategory.contains(missionLists[i].listName) {
+                        let index = buffedCategory.firstIndex(of: missionLists[i].listName)
+                        let intMag = Int(buffArray[index!].magnification * 10)
+                        let buffedMissionList = missionLists[i].missionList.map{($0.mission, $0.pt * intMag / 10)}
+                        missionLists[i].missionList = buffedMissionList
+                    }
+                }
+            }
+        }
+        
+        // TableViewを表示
         tableView.reloadData()
         
         //編集中でもセルを選択できるようにする
@@ -271,13 +291,26 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        //バフされたptの初期化
+        //バフされたptの初期化: グラスモード
         if glassModeIsEnabled == true {
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
                         missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) / 1.1)
                     }
+                }
+            }
+        }
+        
+        //バフされたptの初期化: Settingバフ
+        if isBuffApplicated {
+            let buffedCategory = buffArray.map{$0.category}
+            for i in 0..<missionLists.count {
+                if buffedCategory.contains(missionLists[i].listName) {
+                    let index = buffedCategory.firstIndex(of: missionLists[i].listName)
+                    let intMag = Int(buffArray[index!].magnification * 10)
+                    let debuffedMissionList = missionLists[i].missionList.map{($0.mission, $0.pt / intMag / 10)}
+                    missionLists[i].missionList = debuffedMissionList
                 }
             }
         }

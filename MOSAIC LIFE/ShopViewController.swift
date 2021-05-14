@@ -17,6 +17,10 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
 //    var shopList = [(item: String, pt: Int)]()
     var consumedPtHistory = Array<(item:String, pt:Int)>()
     
+    var buffArray: [(buffName: String, magnification: Float, category: String, date: Date)] = Array<(String, Float, String, Date)>()
+    
+    var isBuffApplicated: Bool = false
+    
     //MARK: - TableView関連
 
     //セクション数
@@ -228,7 +232,6 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         
         // リスト情報をmissionMemoryから読み込み
         let categoryCount: Int = userDefaults.integer(forKey: "categoryCount_shop")
-//        print("CategoryCount: \(categoryCount)")
         for i in 0..<categoryCount {
             if userDefaults.object(forKey: "shopMemory\(String(i))") != nil {
                 if let dicList = userDefaults.object(forKey: "shopMemory\(String(i))") as? [[String: Any]] {
@@ -241,9 +244,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                     if let listName = userDefaults.string(forKey: "categoryName\(String(i))_shop") {
                         self.shopLists[i].listName = listName
                     } else {
-                        continue
+                        self.shopLists[i].listName = "UnnamedCategory\(String(i))"
                     }
-    //                print(shopList)
                 }
             } else {
                 //保存データが無い場合、アラート表示
@@ -251,6 +253,24 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             }
         }
         
+        // バフ: userDefaultsから取得
+        if let dicList = userDefaults.object(forKey: "buffData") as? [[String : Any]] {
+            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! Float, category: $0["category"] as! String, date: $0["date"] as! Date)}
+            if !buffArray.isEmpty {
+                isBuffApplicated = true
+                let buffedCategory = buffArray.map{$0.category}
+                for i in 0..<shopLists.count {
+                    if buffedCategory.contains(shopLists[i].listName) {
+                        let index = buffedCategory.firstIndex(of: shopLists[i].listName)
+                        let intMag = Int(buffArray[index!].magnification * 10)
+                        let buffedShopList = shopLists[i].shopList.map{($0.item, $0.pt * intMag / 10)}
+                        shopLists[i].shopList = buffedShopList
+                    }
+                }
+            }
+        }
+        
+        // TableViewを表示
         tableView.reloadData()
         
         //編集中でもセルを選択できるようにする
@@ -282,13 +302,26 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         //ptHistoryの初期化
         consumedPtHistory.removeAll()
         
-        //バフされたptの初期化
+        //バフされたptの初期化: グラスモード
         if glassModeIsEnabled == true {
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Coding") {
                     for n in 0..<shopLists[i].shopList.count {
                         shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 0.9)
                     }
+                }
+            }
+        }
+        
+        //バフされたptの初期化: Settingバフ
+        if isBuffApplicated {
+            let buffedCategory = buffArray.map{$0.category}
+            for i in 0..<shopLists.count {
+                if buffedCategory.contains(shopLists[i].listName) {
+                    let index = buffedCategory.firstIndex(of: shopLists[i].listName)
+                    let intMag = Int(buffArray[index!].magnification * 10)
+                    let debuffedShopList = shopLists[i].shopList.map{($0.item, $0.pt / intMag / 10)}
+                    shopLists[i].shopList = debuffedShopList
                 }
             }
         }

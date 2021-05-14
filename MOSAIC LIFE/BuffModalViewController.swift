@@ -97,17 +97,29 @@ class BuffModalViewController: UIViewController {
         if nameLabel.text!.isEmpty == false && self.magnificationLabel.text!.isEmpty == false && categoryLabel.text!.isEmpty == false {
             if let decimal = Decimal(string: magnificationLabel.text!) {
                 if decimal != 0 {
-                    buffArray.append((nameLabel.text!, NSString(string: magnificationLabel.text!).floatValue, categoryLabel.text!, datePicker.date))
-                    print("Done後: \(buffArray)")
-                    let convertedList: [[String: Any]] = buffArray.map{["name": $0.buffName, "mag": $0.magnification, "category": $0.category, "date": $0.date]}
-                    UserDefaults.standard.set(convertedList, forKey: "buffData")
-                    print(UserDefaults.standard.object(forKey: "buffData")!)
-                    let nc = self.presentingViewController as! UINavigationController
-                    let mainVC = nc.viewControllers[0] as! ViewController
-                    dateFormatter.dateFormat = "MM/dd"
-                    let date = self.dateFormatter.string(from: self.datePicker.date)
-                    mainVC.buffLog.text += "[\(date)] \"\(self.nameLabel.text!)\"が<\(self.categoryLabel.text!)>で発動中(x\(self.magnificationLabel.text!))\n"
-                    self.dismiss(animated: true, completion: nil)
+                    let buffedCategory = buffArray.map{$0.category}
+                    if buffedCategory.contains(categoryLabel.text!) {
+                        showAlert("既にバフが適用されてるカテゴリです")
+                    } else {
+                        // 保存処理: buffArray変数に保存
+                        buffArray.append((nameLabel.text!, NSString(string: magnificationLabel.text!).floatValue, categoryLabel.text!, datePicker.date))
+                        print("Done後: \(buffArray)")
+                        
+                        // 保存処理: buffArray -> UserDefaultsに保存
+                        let convertedList: [[String: Any]] = buffArray.map{["name": $0.buffName, "mag": $0.magnification, "category": $0.category, "date": $0.date]}
+                        UserDefaults.standard.set(convertedList, forKey: "buffData")
+                        print(UserDefaults.standard.object(forKey: "buffData")!)
+                        
+                        // メイン画面のバフログに書き込み
+                        let nc = self.presentingViewController as! UINavigationController
+                        let mainVC = nc.viewControllers[0] as! ViewController
+                        dateFormatter.dateFormat = "MM/dd"
+                        let date = self.dateFormatter.string(from: self.datePicker.date)
+                        mainVC.buffLog.text += "[\(date)] \"\(self.nameLabel.text!)\"が<\(self.categoryLabel.text!)>で発動中(x\(self.magnificationLabel.text!))\n"
+                        
+                        // モーダルを閉じる
+                        self.dismiss(animated: true, completion: nil)
+                    }
                 } else {
                     showAlert("不正な入力です")
                 }

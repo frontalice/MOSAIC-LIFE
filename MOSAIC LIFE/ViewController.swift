@@ -88,6 +88,10 @@ class ViewController: UIViewController,UITextFieldDelegate {
         
         // 日付変更線更新
         settings.set(dateBorder, forKey: "DateBorder")
+        
+        // BuffData更新
+        let convertedList: [[String: Any]] = buffArray.map{["name": $0.buffName, "mag": $0.magnification, "category": $0.category, "date": $0.date]}
+        UserDefaults.standard.set(convertedList, forKey: "buffData")
     }
     
     func reloadDateBorder() -> Date {
@@ -153,9 +157,14 @@ class ViewController: UIViewController,UITextFieldDelegate {
         }
         print("presentHour: \(presentHour)")
         
-        let lstHour = settings.string(forKey: "timeForDivideLine") ?? ptHour
-        print("memoryHour: \(lstHour)")
-        var lastHour = Int(lstHour)!
+        var lastHour: Int!
+        if settings.object(forKey: "timeForDivideLine") != nil {
+            lastHour = settings.integer(forKey: "timeForDivideLine")
+        } else {
+            lastHour = presentHour
+        }
+        
+        print("memoryHour: \(lastHour!)")
         if lastHour <= 3 {
             switch lastHour {
             case 0:
@@ -170,7 +179,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
                 break
             }
         }
-        print("lastHour: \(lastHour)\n-------------------")
+        print("lastHour: \(lastHour!)\n-------------------")
         
         
         // 交換画面での交換履歴をテキストログに表示
