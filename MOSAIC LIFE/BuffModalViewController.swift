@@ -8,7 +8,7 @@
 import UIKit
 import DropDown
 
-class BuffModalViewController: UIViewController {
+class BuffModalViewController: UIViewController, UITextFieldDelegate {
 
     let dateFormatter = DateFormatter()
     let dropDown = DropDown()
@@ -16,8 +16,21 @@ class BuffModalViewController: UIViewController {
     var shopCategoryArray = Array<String>()
     var buffArray: [(buffName: String, magnification: Float, category: String, date: Date)] = Array<(String, Float, String, Date)>()
     
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if textField == magnificationLabel {
+            let magCharas: String = (textField.text! as NSString).replacingCharacters(in: range, with: string)
+            if magCharas.count <= 4 {
+                return true
+            }
+            return false
+        }
+        return true
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        magnificationLabel.delegate = self
         
         //倍率入力用キーボードにdoneボタンを追加
         let toolbar = UIToolbar()
@@ -58,7 +71,6 @@ class BuffModalViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         if let dicList = UserDefaults.standard.object(forKey: "buffData") as? [[String : Any]] {
             self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! Float, category: $0["category"] as! String, date: $0["date"] as! Date)}
-            print("遷移後: \(buffArray)")
         }
     }
     
@@ -108,7 +120,6 @@ class BuffModalViewController: UIViewController {
                         // 保存処理: buffArray -> UserDefaultsに保存
                         let convertedList: [[String: Any]] = buffArray.map{["name": $0.buffName, "mag": $0.magnification, "category": $0.category, "date": $0.date]}
                         UserDefaults.standard.set(convertedList, forKey: "buffData")
-                        print(UserDefaults.standard.object(forKey: "buffData")!)
                         
                         // メイン画面のバフログに書き込み
                         let nc = self.presentingViewController as! UINavigationController

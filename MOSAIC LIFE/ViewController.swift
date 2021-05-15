@@ -55,7 +55,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
         
         // 期限超過のバフ消去
         for buffIndex in (0..<self.buffArray.count).reversed() {
-            if buffArray[buffIndex].date < dateBorder {
+            if buffArray[buffIndex].date < now {
                 buffArray.remove(at: buffIndex)
                 print("消去後: \(buffArray)")
             }
@@ -63,13 +63,15 @@ class ViewController: UIViewController,UITextFieldDelegate {
         
         // 日付変更線に関する処理
         if now > dateBorder {
-            // テキストログ初期化
-            self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
-            debugLog.attributedText = attrText
-            
             // 日付変更線更新
             dateBorder = reloadDateBorder()
             
+            // テキストログ初期化
+            self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n日付変更線: \(dateBorder)\n")
+            debugLog.attributedText = attrText
+            
+            let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
+            settings.set(archivedText, forKey: "DebugLog")
         } else {
             // テキストログ取得
             if let archivedLog = settings.object(forKey: "DebugLog") {
@@ -83,6 +85,8 @@ class ViewController: UIViewController,UITextFieldDelegate {
             }
         }
         
+        print("日付変更線: \(dateBorder)\n現在: \(now)")
+
         //バフログ書き込み
         writeBuffLog()
         
@@ -110,13 +114,13 @@ class ViewController: UIViewController,UITextFieldDelegate {
         dateFormatter.setLocalizedDateFormatFromTemplate("H")
         let hour: Int = Int(dateFormatter.string(from: now))!
         
-        dateFormatter.setLocalizedDateFormatFromTemplate("m")
-        let minute: Int = Int(dateFormatter.string(from: now))!
+//        dateFormatter.setLocalizedDateFormatFromTemplate("m")
+//        let minute: Int = Int(dateFormatter.string(from: now))!
+//
+//        dateFormatter.setLocalizedDateFormatFromTemplate("s")
+//        let second: Int = Int(dateFormatter.string(from: now))!
         
-        dateFormatter.setLocalizedDateFormatFromTemplate("s")
-        let second: Int = Int(dateFormatter.string(from: now))!
-        
-        if hour >= 4 && minute >= 0 && second >= 0 {
+        if hour >= 4 {
             day += 1
         }
         

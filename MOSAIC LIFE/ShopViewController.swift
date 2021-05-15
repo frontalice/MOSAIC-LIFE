@@ -173,6 +173,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     }
     
     func saveTableViewData(){
+        makeRawData()
+        
         for i in 0..<shopLists.count {
             let convertedList: [[String: Any]] = shopLists[i].shopList.map{["item": $0.item, "pt": $0.pt]}
             userDefaults.set(convertedList, forKey: "shopMemory\(String(i))")
@@ -180,6 +182,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
 //            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("shopMemory") })
         }
         userDefaults.set(shopLists.count, forKey: "categoryCount_shop")
+        
+        enchantData()
     }
     
     //MARK: - PickerView関連
@@ -262,8 +266,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                 for i in 0..<shopLists.count {
                     if buffedCategory.contains(shopLists[i].listName) {
                         let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                        let intMag = Int(buffArray[index!].magnification * 10)
-                        let buffedShopList = shopLists[i].shopList.map{($0.item, $0.pt * intMag / 10)}
+                        let intMag = Int(buffArray[index!].magnification * 100)
+                        let buffedShopList = shopLists[i].shopList.map{($0.item, $0.pt * intMag / 100)}
                         shopLists[i].shopList = buffedShopList
                     }
                 }
@@ -292,18 +296,12 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        // メイン画面vcにconsumedPtHistoryを渡す
-        let nvc = self.navigationController!
-        let vc = nvc.viewControllers[0] as! ViewController
-        for i in 0..<consumedPtHistory.count {
-            vc.usedPointArray.append(consumedPtHistory[i])
-//            print(element)
-        }
-        //ptHistoryの初期化
-        consumedPtHistory.removeAll()
         
+    }
+    
+    func makeRawData() {
         //バフされたptの初期化: グラスモード
-        if glassModeIsEnabled == true {
+        if glassModeIsEnabled {
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Coding") {
                     for n in 0..<shopLists[i].shopList.count {
@@ -319,9 +317,35 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if buffedCategory.contains(shopLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                    let intMag = Int(buffArray[index!].magnification * 10)
-                    let debuffedShopList = shopLists[i].shopList.map{($0.item, $0.pt / intMag / 10)}
+                    let intMag = Int(buffArray[index!].magnification * 100)
+                    let debuffedShopList = shopLists[i].shopList.map{($0.item, $0.pt / intMag * 100)}
                     shopLists[i].shopList = debuffedShopList
+                }
+            }
+        }
+    }
+    
+    func enchantData() {
+        //グラスモード
+        if glassModeIsEnabled {
+            for i in 0..<shopLists.count {
+                if shopLists[i].listName.contains("Coding") {
+                    for n in 0..<shopLists[i].shopList.count {
+                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) * 0.9)
+                    }
+                }
+            }
+        }
+        
+        //Settingバフ
+        if isBuffApplicated {
+            let buffedCategory = buffArray.map{$0.category}
+            for i in 0..<shopLists.count {
+                if buffedCategory.contains(shopLists[i].listName) {
+                    let index = buffedCategory.firstIndex(of: shopLists[i].listName)
+                    let intMag = Int(buffArray[index!].magnification * 100)
+                    let buffedShopList = shopLists[i].shopList.map{($0.item, $0.pt * intMag / 100)}
+                    shopLists[i].shopList = buffedShopList
                 }
             }
         }
@@ -373,14 +397,25 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             let ptTf = alert.textFields![1]
             let sectionTf = alert.textFields![2]
             
-            if let itemText = itemTf.text, let ptText = ptTf.text {
-                if let ptInt = Int(ptText) {
+            if let itemText = itemTf.text, let ptText = ptTf.text, let categoryText = sectionTf.text {
+                if var ptInt: Int = Int(ptText) {
+                    // バフ適用中のカテゴリに追加する場合
+                    if self.isBuffApplicated {
+                        let buffedCategory = self.buffArray.map{$0.category}
+                        for i in 0..<buffedCategory.count {
+                            if categoryText == buffedCategory[i] {
+                                let index = buffedCategory.firstIndex(of: categoryText)
+                                let intMag = Int(self.buffArray[index!].magnification * 100)
+                                ptInt = ptInt * intMag / 100
+                            }
+                        }
+                    }
+                    // 既存のカテゴリに追加する場合 -> そのまま
                     if sectionTf.text != "新しいカテゴリを追加" {
-                        //既存のカテゴリに追加 -> そのまま
                         self.shopLists.removeLast()
                         self.addItem(itemText, ptInt, self.selectedSectionIndex)
                     } else {
-                        //カテゴリを新しく作成してから追加
+                    // カテゴリを新しく作成してから追加
                         self.createCategory(itemText, ptInt)
                     }
                 } else {

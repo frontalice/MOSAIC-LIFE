@@ -173,6 +173,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     }
     
     func saveTableViewData(){
+        makeRawData()
+        
         for i in 0..<missionLists.count {
             let convertedList: [[String: Any]] = missionLists[i].missionList.map{["mission": $0.mission, "pt": $0.pt]}
             userDefaults.set(convertedList, forKey: "missionMemory\(String(i))")
@@ -180,6 +182,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 //            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("missionMemory") })
         }
         userDefaults.set(missionLists.count, forKey: "categoryCount")
+        
+        enchantData()
     }
     
     //MARK: - PickerView関連
@@ -260,8 +264,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                 for i in 0..<missionLists.count {
                     if buffedCategory.contains(missionLists[i].listName) {
                         let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-                        let intMag = Int(buffArray[index!].magnification * 10)
-                        let buffedMissionList = missionLists[i].missionList.map{($0.mission, $0.pt * intMag / 10)}
+                        let intMag = Int(buffArray[index!].magnification * 100)
+                        let buffedMissionList = missionLists[i].missionList.map{($0.mission, $0.pt * intMag / 100)}
                         missionLists[i].missionList = buffedMissionList
                     }
                 }
@@ -291,8 +295,12 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        
+    }
+    
+    func makeRawData() {
         //バフされたptの初期化: グラスモード
-        if glassModeIsEnabled == true {
+        if glassModeIsEnabled {
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
@@ -308,13 +316,39 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if buffedCategory.contains(missionLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-                    let intMag = Int(buffArray[index!].magnification * 10)
-                    let debuffedMissionList = missionLists[i].missionList.map{($0.mission, $0.pt / intMag / 10)}
+                    let intMag = Int(buffArray[index!].magnification * 100)
+                    let debuffedMissionList = missionLists[i].missionList.map{($0.mission, $0.pt / intMag * 100)}
                     missionLists[i].missionList = debuffedMissionList
                 }
             }
         }
 
+    }
+    
+    func enchantData() {
+        //グラスモード
+        if glassModeIsEnabled {
+            for i in 0..<missionLists.count {
+                if missionLists[i].listName.contains("Coding") {
+                    for n in 0..<missionLists[i].missionList.count {
+                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) * 1.1)
+                    }
+                }
+            }
+        }
+        
+        //Settingバフ
+        if isBuffApplicated {
+            let buffedCategory = buffArray.map{$0.category}
+            for i in 0..<missionLists.count {
+                if buffedCategory.contains(missionLists[i].listName) {
+                    let index = buffedCategory.firstIndex(of: missionLists[i].listName)
+                    let intMag = Int(buffArray[index!].magnification * 100)
+                    let buffedMissionList = missionLists[i].missionList.map{($0.mission, $0.pt * intMag / 100)}
+                    missionLists[i].missionList = buffedMissionList
+                }
+            }
+        }
     }
 
     //MARK: - StoryBoard
@@ -364,14 +398,25 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             let ptTf = alert.textFields![1]
             let sectionTf = alert.textFields![2]
             
-            if let missionText = missionTf.text, let ptText = ptTf.text {
-                if let ptInt = Int(ptText) {
+            if let missionText = missionTf.text, let ptText = ptTf.text, let categoryText = sectionTf.text {
+                if var ptInt = Int(ptText) {
+                    // バフ適用中のカテゴリに追加する場合
+                    if self.isBuffApplicated {
+                        let buffedCategory = self.buffArray.map{$0.category}
+                        for i in 0..<buffedCategory.count {
+                            if categoryText == buffedCategory[i] {
+                                let index = buffedCategory.firstIndex(of: categoryText)
+                                let intMag = Int(self.buffArray[index!].magnification * 100)
+                                ptInt = ptInt * intMag / 100
+                            }
+                        }
+                    }
+                    // 既存のカテゴリに追加する場合 -> そのまま
                     if sectionTf.text != "新しいカテゴリを追加" {
-                        //既存のカテゴリに追加 -> そのまま
                         self.missionLists.removeLast()
                         self.addMission(missionText, ptInt, self.selectedSectionIndex)
                     } else {
-                        //カテゴリを新しく作成してから追加
+                    //カテゴリを新しく作成してから追加
                         self.createCategory(missionText, ptInt)
                     }
                 } else {
