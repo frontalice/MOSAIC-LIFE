@@ -13,6 +13,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
     
     var gotPointArray = Array<(item:String, pt:Int)>()
     var usedPointArray = Array<(item:String, pt:Int)>()
+    var ptPerHourArray = Array<Int>()
     
     var attrText = NSMutableAttributedString()
     
@@ -37,6 +38,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
         pointLabel.text = String(roadPoints())
         
         let now = Date()
+        let format = DateFormatter()
         var dateBorder: Date
         
         // dateBorderの取得、nilなら明日4時に設定
@@ -61,13 +63,19 @@ class ViewController: UIViewController,UITextFieldDelegate {
             }
         }
         
+        // テスト用
+        // dateBorder = Date(timeInterval: -60*60*24, since: dateBorder)
+        
         // 日付変更線に関する処理
         if now > dateBorder {
             // 日付変更線更新
             dateBorder = reloadDateBorder()
             
+            // dateBorderを日本時間で取得
+            format.dateFormat = DateFormatter.dateFormat(fromTemplate: "MMMdHm", options: 0, locale: Locale(identifier: "ja_JP"))
+            
             // テキストログ初期化
-            self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n日付変更線: \(dateBorder)\n")
+            self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n日付変更線: \(format.string(from: dateBorder))\n----------------------------------------------------\n")
             debugLog.attributedText = attrText
             
             let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
@@ -189,7 +197,9 @@ class ViewController: UIViewController,UITextFieldDelegate {
         // 交換画面での交換履歴をテキストログに表示
         if gotPointArray.isEmpty != true {
             if presentHour > lastHour {
-                self.attrText.insert(NSAttributedString(string: "--------------------------------------------------------\n"), at: attrText.length)
+                let hourSum = ptPerHourArray.reduce(0, {$0+$1})
+                ptPerHourArray.removeAll()
+                self.attrText.insert(NSAttributedString(string: "---------↑\(lastHour!)-\(presentHour)時合計: \(hourSum)pt---------\n"), at: attrText.length)
             }
             for i in 0..<gotPointArray.count {
                 let gotPtText = NSMutableAttributedString(string: "[\(timeString)] +\(gotPointArray[i].pt)pt: \(gotPointArray[i].item)\n")
@@ -204,7 +214,9 @@ class ViewController: UIViewController,UITextFieldDelegate {
         // 購入画面での購入履歴をテキストログに表示
         if usedPointArray.isEmpty != true {
             if presentHour > lastHour {
-                self.attrText.insert(NSAttributedString(string: "--------------------------------------------------------\n"), at: attrText.length)
+                let hourSum = ptPerHourArray.reduce(0, {$0+$1})
+                ptPerHourArray.removeAll()
+                self.attrText.insert(NSAttributedString(string: "---------↑\(lastHour!)-\(presentHour)時合計: \(hourSum)pt---------\n"), at: attrText.length)
             }
             for i in 0..<usedPointArray.count {
                 let consumedPtText = NSMutableAttributedString(string: "[\(timeString)] -\(usedPointArray[i].pt)pt: \(usedPointArray[i].item)\n")
@@ -227,7 +239,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
     
     func writeBuffLog(){
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM/dd"
+        dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "M/d H:mm", options: 0, locale: Locale(identifier: "ja_JP"))
         for buffIndex in 0..<buffArray.count {
             buffLog.text += "[\(dateFormatter.string(from: buffArray[buffIndex].date))] \"\(buffArray[buffIndex].buffName)\"が<\(buffArray[buffIndex].category)>で発動中(x\(buffArray[buffIndex].magnification))\n"
         }

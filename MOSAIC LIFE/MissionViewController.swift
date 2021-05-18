@@ -117,6 +117,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             let nvc = self.navigationController!
             let vc = nvc.viewControllers[0] as! ViewController
             vc.gotPointArray.append((missionItem, missionPoint))
+            vc.ptPerHourArray.append(missionPoint)
             vc.writeDebugLog()
 
             //ptHistoryの初期化
@@ -304,7 +305,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) / 1.1)
+                        missionLists[i].missionList[n].pt = missionLists[i].missionList[n].pt / 11 * 10
                     }
                 }
             }
@@ -331,7 +332,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) * 1.1)
+                        missionLists[i].missionList[n].pt = missionLists[i].missionList[n].pt * 11 / 10
                     }
                 }
             }

@@ -80,7 +80,7 @@
                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="Zdg-Lj-z9p">
                                 <rect key="frame" x="20" y="206.5" width="335" height="238.5"/>
                                 <subviews>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="4wk-aP-Iag">
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4wk-aP-Iag">
                                         <rect key="frame" x="0.0" y="0.0" width="270" height="238.5"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <color key="textColor" systemColor="labelColor"/>
@@ -427,7 +427,7 @@
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="lCO-kG-Pqp"/>
                                     <barButtonItem style="plain" id="zUi-Rr-8fQ">
                                         <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="2vz-4r-HxV">
-                                            <rect key="frame" x="324" y="14.5" width="35" height="15"/>
+                                            <rect key="frame" x="324" y="12" width="35" height="20"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <state key="normal" backgroundImage="eyeglasses" catalog="system"/>
                                             <connections>

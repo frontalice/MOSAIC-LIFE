@@ -124,7 +124,7 @@ class BuffModalViewController: UIViewController, UITextFieldDelegate {
                         // メイン画面のバフログに書き込み
                         let nc = self.presentingViewController as! UINavigationController
                         let mainVC = nc.viewControllers[0] as! ViewController
-                        dateFormatter.dateFormat = "MM/dd"
+                        dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "M/d H:mm", options: 0, locale: Locale(identifier: "ja_JP"))
                         let date = self.dateFormatter.string(from: self.datePicker.date)
                         mainVC.buffLog.text += "[\(date)] \"\(self.nameLabel.text!)\"が<\(self.categoryLabel.text!)>で発動中(x\(self.magnificationLabel.text!))\n"
                         

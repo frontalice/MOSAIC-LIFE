@@ -119,6 +119,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             let nvc = self.navigationController!
             let vc = nvc.viewControllers[0] as! ViewController
             vc.usedPointArray.append((consumeItem, consumePoint))
+            vc.ptPerHourArray.append(consumePoint)
             vc.writeDebugLog()
             
             //消費履歴を更新
@@ -305,7 +306,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Coding") {
                     for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 0.9)
+                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 9 * 10)
                     }
                 }
             }
@@ -331,7 +332,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Coding") {
                     for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) * 0.9)
+                        shopLists[i].shopList[n].pt = shopLists[i].shopList[n].pt * 9 / 10
                     }
                 }
             }
