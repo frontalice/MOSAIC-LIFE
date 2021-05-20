@@ -120,6 +120,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             let vc = nvc.viewControllers[0] as! ViewController
             vc.usedPointArray.append((consumeItem, consumePoint))
             vc.ptPerHourArray.append(consumePoint)
+            userDefaults.set(vc.ptPerHourArray, forKey: "ptPerHourArray")
             vc.writeDebugLog()
             
             //消費履歴を更新
@@ -267,8 +268,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                 for i in 0..<shopLists.count {
                     if buffedCategory.contains(shopLists[i].listName) {
                         let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                        let intMag = Int(buffArray[index!].magnification * 100)
-                        let buffedShopList = shopLists[i].shopList.map{($0.item, $0.pt * intMag / 100)}
+                        let intMag = buffArray[index!].magnification * 100.0
+                        let buffedShopList = shopLists[i].shopList.map{($0.item, Int(Float($0.pt) * intMag / 100.0))}
                         shopLists[i].shopList = buffedShopList
                     }
                 }
@@ -306,7 +307,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Coding") {
                     for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 9 * 10)
+                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 9.0 * 10.0)
                     }
                 }
             }
@@ -318,8 +319,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if buffedCategory.contains(shopLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                    let intMag = Int(buffArray[index!].magnification * 100)
-                    let debuffedShopList = shopLists[i].shopList.map{($0.item, $0.pt / intMag * 100)}
+                    let intMag = buffArray[index!].magnification * 100.0
+                    let debuffedShopList = shopLists[i].shopList.map{($0.item, Int(Float($0.pt) / intMag * 100.0))}
                     shopLists[i].shopList = debuffedShopList
                 }
             }
@@ -332,7 +333,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Coding") {
                     for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = shopLists[i].shopList[n].pt * 9 / 10
+                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) * 9.0 / 10.0)
                     }
                 }
             }
@@ -344,8 +345,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if buffedCategory.contains(shopLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                    let intMag = Int(buffArray[index!].magnification * 100)
-                    let buffedShopList = shopLists[i].shopList.map{($0.item, $0.pt * intMag / 100)}
+                    let intMag = buffArray[index!].magnification * 100.0
+                    let buffedShopList = shopLists[i].shopList.map{($0.item, Int(Float($0.pt) * intMag / 100.0))}
                     shopLists[i].shopList = buffedShopList
                 }
             }
@@ -406,8 +407,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                         for i in 0..<buffedCategory.count {
                             if categoryText == buffedCategory[i] {
                                 let index = buffedCategory.firstIndex(of: categoryText)
-                                let intMag = Int(self.buffArray[index!].magnification * 100)
-                                ptInt = ptInt * intMag / 100
+                                let intMag = self.buffArray[index!].magnification * 100.0
+                                ptInt = Int(Float(ptInt) * intMag / 100.0)
                             }
                         }
                     }

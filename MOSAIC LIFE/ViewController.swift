@@ -193,13 +193,20 @@ class ViewController: UIViewController,UITextFieldDelegate {
         }
         print("lastHour: \(lastHour!)\n-------------------")
         
+        if let savedPphArray = settings.array(forKey: "ptPerHourArray") as? [Int] {
+            ptPerHourArray = savedPphArray
+        }
         
         // 交換画面での交換履歴をテキストログに表示
         if gotPointArray.isEmpty != true {
             if presentHour > lastHour {
+                let lastPt = ptPerHourArray[ptPerHourArray.count - 1]
+                ptPerHourArray.removeLast()
                 let hourSum = ptPerHourArray.reduce(0, {$0+$1})
                 ptPerHourArray.removeAll()
                 self.attrText.insert(NSAttributedString(string: "---------↑\(lastHour!)-\(presentHour)時合計: \(hourSum)pt---------\n"), at: attrText.length)
+                ptPerHourArray.append(lastPt)
+                settings.set(ptPerHourArray, forKey: "ptPerHourArray")
             }
             for i in 0..<gotPointArray.count {
                 let gotPtText = NSMutableAttributedString(string: "[\(timeString)] +\(gotPointArray[i].pt)pt: \(gotPointArray[i].item)\n")
@@ -214,9 +221,13 @@ class ViewController: UIViewController,UITextFieldDelegate {
         // 購入画面での購入履歴をテキストログに表示
         if usedPointArray.isEmpty != true {
             if presentHour > lastHour {
+                let lastPt = ptPerHourArray[ptPerHourArray.count - 1]
+                ptPerHourArray.removeLast()
                 let hourSum = ptPerHourArray.reduce(0, {$0+$1})
                 ptPerHourArray.removeAll()
                 self.attrText.insert(NSAttributedString(string: "---------↑\(lastHour!)-\(presentHour)時合計: \(hourSum)pt---------\n"), at: attrText.length)
+                ptPerHourArray.append(lastPt)
+                settings.set(ptPerHourArray, forKey: "ptPerHourArray")
             }
             for i in 0..<usedPointArray.count {
                 let consumedPtText = NSMutableAttributedString(string: "[\(timeString)] -\(usedPointArray[i].pt)pt: \(usedPointArray[i].item)\n")

@@ -118,6 +118,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             let vc = nvc.viewControllers[0] as! ViewController
             vc.gotPointArray.append((missionItem, missionPoint))
             vc.ptPerHourArray.append(missionPoint)
+            userDefaults.set(vc.ptPerHourArray, forKey: "ptPerHourArray")
             vc.writeDebugLog()
 
             //ptHistoryの初期化
@@ -265,8 +266,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                 for i in 0..<missionLists.count {
                     if buffedCategory.contains(missionLists[i].listName) {
                         let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-                        let intMag = Int(buffArray[index!].magnification * 100)
-                        let buffedMissionList = missionLists[i].missionList.map{($0.mission, $0.pt * intMag / 100)}
+                        let intMag = buffArray[index!].magnification * 100.0
+                        let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int(Float($0.pt) * intMag / 100.0))}
                         missionLists[i].missionList = buffedMissionList
                     }
                 }
@@ -305,7 +306,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = missionLists[i].missionList[n].pt / 11 * 10
+                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) / 11.0 * 10.0)
                     }
                 }
             }
@@ -317,8 +318,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if buffedCategory.contains(missionLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-                    let intMag = Int(buffArray[index!].magnification * 100)
-                    let debuffedMissionList = missionLists[i].missionList.map{($0.mission, $0.pt / intMag * 100)}
+                    let intMag = buffArray[index!].magnification * 100.0
+                    let debuffedMissionList = missionLists[i].missionList.map{($0.mission, Int(Float($0.pt) / intMag * 100.0))}
                     missionLists[i].missionList = debuffedMissionList
                 }
             }
@@ -332,7 +333,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = missionLists[i].missionList[n].pt * 11 / 10
+                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) * 11.0 / 10.0)
                     }
                 }
             }
@@ -344,8 +345,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if buffedCategory.contains(missionLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-                    let intMag = Int(buffArray[index!].magnification * 100)
-                    let buffedMissionList = missionLists[i].missionList.map{($0.mission, $0.pt * intMag / 100)}
+                    let intMag = buffArray[index!].magnification * 100.0
+                    let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int(Float($0.pt) * intMag / 100.0))}
                     missionLists[i].missionList = buffedMissionList
                 }
             }
@@ -407,8 +408,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                         for i in 0..<buffedCategory.count {
                             if categoryText == buffedCategory[i] {
                                 let index = buffedCategory.firstIndex(of: categoryText)
-                                let intMag = Int(self.buffArray[index!].magnification * 100)
-                                ptInt = ptInt * intMag / 100
+                                let intMag = self.buffArray[index!].magnification * 100.0
+                                ptInt = Int(Float(ptInt) * intMag / 100.0)
                             }
                         }
                     }
