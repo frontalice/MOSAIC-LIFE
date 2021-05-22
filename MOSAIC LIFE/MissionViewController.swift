@@ -16,7 +16,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 //    var missionList = [(mission: String, pt: Int)]()
     var exchangedPtHistory = Array<(item:String, pt:Int)>()
     
-    var buffArray: [(buffName: String, magnification: Float, category: String, date: Date)] = Array<(String, Float, String, Date)>()
+    var buffArray: [(buffName: String, magnification: String, category: String, date: Date)] = Array<(String, String, String, Date)>()
     
     var isBuffApplicated: Bool = false
     
@@ -117,6 +117,11 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             let nvc = self.navigationController!
             let vc = nvc.viewControllers[0] as! ViewController
             vc.gotPointArray.append((missionItem, missionPoint))
+            
+            // 切り取り線向け処理
+            if let savedPphArray = userDefaults.array(forKey: "ptPerHourArray") as? [Int] {
+                vc.ptPerHourArray = savedPphArray
+            }
             vc.ptPerHourArray.append(missionPoint)
             userDefaults.set(vc.ptPerHourArray, forKey: "ptPerHourArray")
             vc.writeDebugLog()
@@ -144,7 +149,19 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                 let missionTf = alert.textFields![0]
                 let ptTf = alert.textFields![1]
                 if let missionText = missionTf.text, let ptText = ptTf.text {
-                    if let ptInt = Int(ptText) {
+                    if var ptInt = Int(ptText) {
+                        //バフ適用対象の場合、バフをかける
+                        if self.isBuffApplicated {
+                            let buffedCategory = self.buffArray.map{$0.category}
+                            for i in 0..<buffedCategory.count {
+                                if self.missionLists[indexPath.section].listName == buffedCategory[i] {
+                                    let index = buffedCategory.firstIndex(of: self.missionLists[indexPath.section].listName)
+    //                                let intMag = self.buffArray[index!].magnification * 100.0
+                                    ptInt = Int("\(Decimal(ptInt) * Decimal(string: self.buffArray[index!].magnification)!)")!
+                                }
+                            }
+                        }
+                        
                         self.missionLists[indexPath.section].missionList[indexPath.row].mission = missionText
                         self.missionLists[indexPath.section].missionList[indexPath.row].pt = ptInt
                         self.tableView.reloadData()
@@ -259,15 +276,15 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         
         // バフ: userDefaultsから取得
         if let dicList = userDefaults.object(forKey: "buffData") as? [[String : Any]] {
-            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! Float, category: $0["category"] as! String, date: $0["date"] as! Date)}
+            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! String, category: $0["category"] as! String, date: $0["date"] as! Date)}
             if !buffArray.isEmpty {
                 isBuffApplicated = true
                 let buffedCategory = buffArray.map{$0.category}
                 for i in 0..<missionLists.count {
                     if buffedCategory.contains(missionLists[i].listName) {
                         let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-                        let intMag = buffArray[index!].magnification * 100.0
-                        let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int(Float($0.pt) * intMag / 100.0))}
+//                        let intMag = buffArray[index!].magnification * 100
+                        let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) * Decimal(string: self.buffArray[index!].magnification)!)")!)}
                         missionLists[i].missionList = buffedMissionList
                     }
                 }
@@ -306,7 +323,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) / 11.0 * 10.0)
+                        missionLists[i].missionList[n].pt = Int("\(Decimal(missionLists[i].missionList[n].pt) / 1.1)")!
                     }
                 }
             }
@@ -318,8 +335,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if buffedCategory.contains(missionLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-                    let intMag = buffArray[index!].magnification * 100.0
-                    let debuffedMissionList = missionLists[i].missionList.map{($0.mission, Int(Float($0.pt) / intMag * 100.0))}
+//                    let intMag = buffArray[index!].magnification * 100.0
+                    let debuffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) / Decimal(string: self.buffArray[index!].magnification)!)")!)}
                     missionLists[i].missionList = debuffedMissionList
                 }
             }
@@ -333,7 +350,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) * 11.0 / 10.0)
+                        missionLists[i].missionList[n].pt = Int("\(Decimal(missionLists[i].missionList[n].pt) * 1.1)")!
                     }
                 }
             }
@@ -345,8 +362,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if buffedCategory.contains(missionLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-                    let intMag = buffArray[index!].magnification * 100.0
-                    let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int(Float($0.pt) * intMag / 100.0))}
+//                    let intMag = buffArray[index!].magnification * 100.0
+                    let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) * Decimal(string: self.buffArray[index!].magnification)!)")!)}
                     missionLists[i].missionList = buffedMissionList
                 }
             }
@@ -408,8 +425,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                         for i in 0..<buffedCategory.count {
                             if categoryText == buffedCategory[i] {
                                 let index = buffedCategory.firstIndex(of: categoryText)
-                                let intMag = self.buffArray[index!].magnification * 100.0
-                                ptInt = Int(Float(ptInt) * intMag / 100.0)
+//                                let intMag = self.buffArray[index!].magnification * 100.0
+                                ptInt = Int("\(Decimal(ptInt) * Decimal(string: self.buffArray[index!].magnification)!)")!
                             }
                         }
                     }
@@ -445,7 +462,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) / 1.1)
+                        missionLists[i].missionList[n].pt = Int("\(Decimal(missionLists[i].missionList[n].pt) / 1.1)")!
                     }
                     tableView.reloadData()
                 }
@@ -462,7 +479,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) * 1.1)
+                        missionLists[i].missionList[n].pt = Int("\(Decimal(missionLists[i].missionList[n].pt) * 1.1)")!
                     }
                     tableView.reloadData()
                 }
@@ -472,7 +489,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if missionLists[i].listName.contains("Coding") {
                     for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int(Float(missionLists[i].missionList[n].pt) / 1.1)
+                        missionLists[i].missionList[n].pt = Int("\(Decimal(missionLists[i].missionList[n].pt) / 1.1)")!
                     }
                     tableView.reloadData()
                 }
@@ -517,7 +534,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
             if let categoryText = alert.textFields![0].text {
                 self.missionLists.insert((missionList: [(mission, pt)], categoryText), at: self.selectedSectionIndex)
-//                self.missionLists.append((missionList: [(mission, pt)], categoryText))
                 self.missionLists.removeLast()
                 self.tableView.reloadData()
                 self.saveTableViewData()

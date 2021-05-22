@@ -14,12 +14,12 @@ class BuffModalViewController: UIViewController, UITextFieldDelegate {
     let dropDown = DropDown()
     var missionCategoryArray = Array<String>()
     var shopCategoryArray = Array<String>()
-    var buffArray: [(buffName: String, magnification: Float, category: String, date: Date)] = Array<(String, Float, String, Date)>()
+    var buffArray: [(buffName: String, magnification: String, category: String, date: Date)] = Array<(String, String, String, Date)>()
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         if textField == magnificationLabel {
             let magCharas: String = (textField.text! as NSString).replacingCharacters(in: range, with: string)
-            if magCharas.count <= 4 {
+            if magCharas.count <= 3 {
                 return true
             }
             return false
@@ -70,7 +70,7 @@ class BuffModalViewController: UIViewController, UITextFieldDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         if let dicList = UserDefaults.standard.object(forKey: "buffData") as? [[String : Any]] {
-            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! Float, category: $0["category"] as! String, date: $0["date"] as! Date)}
+            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! String, category: $0["category"] as! String, date: $0["date"] as! Date)}
         }
     }
     
@@ -114,7 +114,7 @@ class BuffModalViewController: UIViewController, UITextFieldDelegate {
                         showAlert("既にバフが適用されてるカテゴリです")
                     } else {
                         // 保存処理: buffArray変数に保存
-                        buffArray.append((nameLabel.text!, NSString(string: magnificationLabel.text!).floatValue, categoryLabel.text!, datePicker.date))
+                        buffArray.append((nameLabel.text!, magnificationLabel.text!, categoryLabel.text!, datePicker.date))
                         print("Done後: \(buffArray)")
                         
                         // 保存処理: buffArray -> UserDefaultsに保存

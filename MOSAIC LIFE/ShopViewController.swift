@@ -17,7 +17,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
 //    var shopList = [(item: String, pt: Int)]()
     var consumedPtHistory = Array<(item:String, pt:Int)>()
     
-    var buffArray: [(buffName: String, magnification: Float, category: String, date: Date)] = Array<(String, Float, String, Date)>()
+    var buffArray: [(buffName: String, magnification: String, category: String, date: Date)] = Array<(String, String, String, Date)>()
     
     var isBuffApplicated: Bool = false
     
@@ -119,6 +119,11 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             let nvc = self.navigationController!
             let vc = nvc.viewControllers[0] as! ViewController
             vc.usedPointArray.append((consumeItem, consumePoint))
+            
+            // 切り取り線向け処理
+            if let savedPphArray = userDefaults.array(forKey: "ptPerHourArray") as? [Int] {
+                vc.ptPerHourArray = savedPphArray
+            }
             vc.ptPerHourArray.append(consumePoint)
             userDefaults.set(vc.ptPerHourArray, forKey: "ptPerHourArray")
             vc.writeDebugLog()
@@ -144,7 +149,19 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                 let itemTf = alert.textFields![0]
                 let ptTf = alert.textFields![1]
                 if let itemText = itemTf.text, let ptText = ptTf.text {
-                    if let ptInt = Int(ptText) {
+                    if var ptInt = Int(ptText) {
+                        //バフ適用対象の場合、バフをかける
+                        if self.isBuffApplicated {
+                            let buffedCategory = self.buffArray.map{$0.category}
+                            for i in 0..<buffedCategory.count {
+                                if self.shopLists[indexPath.section].listName == buffedCategory[i] {
+                                    let index = buffedCategory.firstIndex(of: self.shopLists[indexPath.section].listName)
+    //                                let intMag = self.buffArray[index!].magnification * 100.0
+                                    ptInt = Int("\(Decimal(ptInt) * Decimal(string: self.buffArray[index!].magnification)!)")!
+                                }
+                            }
+                        }
+                        
                         self.shopLists[indexPath.section].shopList[indexPath.row].item = itemText
                         self.shopLists[indexPath.section].shopList[indexPath.row].pt = ptInt
                         self.tableView.reloadData()
@@ -261,15 +278,15 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         
         // バフ: userDefaultsから取得
         if let dicList = userDefaults.object(forKey: "buffData") as? [[String : Any]] {
-            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! Float, category: $0["category"] as! String, date: $0["date"] as! Date)}
+            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! String, category: $0["category"] as! String, date: $0["date"] as! Date)}
             if !buffArray.isEmpty {
                 isBuffApplicated = true
                 let buffedCategory = buffArray.map{$0.category}
                 for i in 0..<shopLists.count {
                     if buffedCategory.contains(shopLists[i].listName) {
                         let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                        let intMag = buffArray[index!].magnification * 100.0
-                        let buffedShopList = shopLists[i].shopList.map{($0.item, Int(Float($0.pt) * intMag / 100.0))}
+//                        let intMag = buffArray[index!].magnification * 100
+                        let buffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) * Decimal(string: self.buffArray[index!].magnification)!)")!)}
                         shopLists[i].shopList = buffedShopList
                     }
                 }
@@ -307,7 +324,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Coding") {
                     for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 9.0 * 10.0)
+                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / 0.9)")!
                     }
                 }
             }
@@ -319,8 +336,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if buffedCategory.contains(shopLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                    let intMag = buffArray[index!].magnification * 100.0
-                    let debuffedShopList = shopLists[i].shopList.map{($0.item, Int(Float($0.pt) / intMag * 100.0))}
+                    let debuffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) / Decimal(string: self.buffArray[index!].magnification)!)")!)}
                     shopLists[i].shopList = debuffedShopList
                 }
             }
@@ -333,7 +349,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Coding") {
                     for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) * 9.0 / 10.0)
+                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) * 0.9)")!
                     }
                 }
             }
@@ -345,8 +361,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if buffedCategory.contains(shopLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                    let intMag = buffArray[index!].magnification * 100.0
-                    let buffedShopList = shopLists[i].shopList.map{($0.item, Int(Float($0.pt) * intMag / 100.0))}
+                    let buffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) * Decimal(string: self.buffArray[index!].magnification)!)")!)}
                     shopLists[i].shopList = buffedShopList
                 }
             }
@@ -407,8 +422,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                         for i in 0..<buffedCategory.count {
                             if categoryText == buffedCategory[i] {
                                 let index = buffedCategory.firstIndex(of: categoryText)
-                                let intMag = self.buffArray[index!].magnification * 100.0
-                                ptInt = Int(Float(ptInt) * intMag / 100.0)
+                                ptInt = Int("\(Decimal(ptInt) * Decimal(string: self.buffArray[index!].magnification)!)")!
                             }
                         }
                     }
@@ -443,7 +457,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Gaming") {
                     for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 0.9)
+                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / 0.9)")!
                     }
                     tableView.reloadData()
                 }
@@ -460,7 +474,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Gaming") {
                     for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) * 0.9)
+                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) * 0.9)")!
                     }
                     tableView.reloadData()
 //                    print(shopLists[i].shopList)
@@ -471,7 +485,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Gaming") {
                     for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int(Float(shopLists[i].shopList[n].pt) / 0.9)
+                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / 0.9)")!
                     }
                     tableView.reloadData()
                 }
@@ -516,7 +530,6 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
             if let categoryText = alert.textFields![0].text {
                 self.shopLists.insert((shopList: [(item, pt)], categoryText), at: self.selectedSectionIndex)
-//                self.shopLists.append((shopList: [(item, pt)], categoryText))
                 self.shopLists.removeLast()
                 self.tableView.reloadData()
                 self.saveTableViewData()

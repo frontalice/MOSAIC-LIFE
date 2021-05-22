@@ -17,7 +17,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
     
     var attrText = NSMutableAttributedString()
     
-    var buffArray: [(buffName: String, magnification: Float, category: String, date: Date)] = Array<(String, Float, String, Date)>()
+    var buffArray: [(buffName: String, magnification: String, category: String, date: Date)] = Array<(String, String, String, Date)>()
     
     //MARK: - ライフサイクル
     
@@ -49,9 +49,12 @@ class ViewController: UIViewController,UITextFieldDelegate {
             dateBorder = reloadDateBorder()
         }
         
+        // テスト用
+//        settings.removeObject(forKey: "buffData")
+        
         // バフログ: userDefaultsから取得
         if let dicList = settings.object(forKey: "buffData") as? [[String : Any]] {
-            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! Float, category: $0["category"] as! String, date: $0["date"] as! Date)}
+            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! String, category: $0["category"] as! String, date: $0["date"] as! Date)}
             print("消去前: \(buffArray)")
         }
         
@@ -275,7 +278,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
         let alert : UIAlertController = UIAlertController(title: nil, message: "初期化してもいい？", preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction!) -> Void in
             self.settings.removeObject(forKey: "buffData")
-            self.buffArray = Array<(String, Float, String, Date)>()
+            self.buffArray = Array<(String, String, String, Date)>()
             self.buffLog.text.removeAll()
         }
         alert.addAction(okAction)
