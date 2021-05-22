@@ -157,7 +157,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                                 if self.missionLists[indexPath.section].listName == buffedCategory[i] {
                                     let index = buffedCategory.firstIndex(of: self.missionLists[indexPath.section].listName)
     //                                let intMag = self.buffArray[index!].magnification * 100.0
-                                    ptInt = Int("\(Decimal(ptInt) * Decimal(string: self.buffArray[index!].magnification)!)")!
+                                    ptInt = Int("\(Decimal(ptInt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
                                 }
                             }
                         }
@@ -284,7 +284,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                     if buffedCategory.contains(missionLists[i].listName) {
                         let index = buffedCategory.firstIndex(of: missionLists[i].listName)
 //                        let intMag = buffArray[index!].magnification * 100
-                        let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) * Decimal(string: self.buffArray[index!].magnification)!)")!)}
+                        let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!)}
                         missionLists[i].missionList = buffedMissionList
                     }
                 }
@@ -305,7 +305,9 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         //グラスモード -> false
         glassModeIsEnabled = false
         glassButton.tintColor = .systemGray
-//        print("glass mode is \(glassModeIsEnabled)")
+        
+        //グラスボタンの当たり判定
+        glassFrame.width = 40
 
     }
     
@@ -335,8 +337,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if buffedCategory.contains(missionLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-//                    let intMag = buffArray[index!].magnification * 100.0
-                    let debuffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) / Decimal(string: self.buffArray[index!].magnification)!)")!)}
+                    print("self.buffArray[index!].magnification: \(self.buffArray[index!].magnification)")
+                    let debuffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) / (Decimal(string: self.buffArray[index!].magnification)! * 10) * 10)")!)}
                     missionLists[i].missionList = debuffedMissionList
                 }
             }
@@ -363,7 +365,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                 if buffedCategory.contains(missionLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: missionLists[i].listName)
 //                    let intMag = buffArray[index!].magnification * 100.0
-                    let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) * Decimal(string: self.buffArray[index!].magnification)!)")!)}
+                    let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!)}
                     missionLists[i].missionList = buffedMissionList
                 }
             }
@@ -372,6 +374,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 
     //MARK: - StoryBoard
     @IBOutlet weak var pointLabel: UIBarLabel!
+    @IBOutlet weak var glassFrame: UIBarButtonItem!
     @IBOutlet weak var glassButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     
@@ -426,7 +429,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                             if categoryText == buffedCategory[i] {
                                 let index = buffedCategory.firstIndex(of: categoryText)
 //                                let intMag = self.buffArray[index!].magnification * 100.0
-                                ptInt = Int("\(Decimal(ptInt) * Decimal(string: self.buffArray[index!].magnification)!)")!
+                                ptInt = Int("\(Decimal(ptInt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
                             }
                         }
                     }

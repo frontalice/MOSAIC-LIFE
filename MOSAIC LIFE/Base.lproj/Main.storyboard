@@ -196,6 +196,7 @@
                     <navigationItem key="navigationItem" title="交換" id="deS-ec-don"/>
                     <connections>
                         <outlet property="glassButton" destination="iRR-LB-C6F" id="KGI-GH-IZK"/>
+                        <outlet property="glassFrame" destination="wWZ-jM-mTh" id="5T7-wk-g75"/>
                         <outlet property="pointLabel" destination="IXI-jc-CT3" id="0ta-Aw-Ofq"/>
                         <outlet property="tableView" destination="7yI-fX-2hT" id="hm0-F1-gbW"/>
                     </connections>
@@ -461,6 +462,7 @@
                     <navigationItem key="navigationItem" title="購入" id="Jub-Bf-QVM"/>
                     <connections>
                         <outlet property="glassButton" destination="2vz-4r-HxV" id="rFv-cJ-5xJ"/>
+                        <outlet property="glassFrame" destination="zUi-Rr-8fQ" id="IEv-K6-ouD"/>
                         <outlet property="pointLabel" destination="bAy-nQ-CLd" id="Shb-TC-QLI"/>
                         <outlet property="tableView" destination="FxL-s0-Ibj" id="q0Q-1B-nmg"/>
                     </connections>

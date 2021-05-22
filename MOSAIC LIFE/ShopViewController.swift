@@ -157,7 +157,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                                 if self.shopLists[indexPath.section].listName == buffedCategory[i] {
                                     let index = buffedCategory.firstIndex(of: self.shopLists[indexPath.section].listName)
     //                                let intMag = self.buffArray[index!].magnification * 100.0
-                                    ptInt = Int("\(Decimal(ptInt) * Decimal(string: self.buffArray[index!].magnification)!)")!
+                                    ptInt = Int("\(Decimal(ptInt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
                                 }
                             }
                         }
@@ -286,7 +286,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                     if buffedCategory.contains(shopLists[i].listName) {
                         let index = buffedCategory.firstIndex(of: shopLists[i].listName)
 //                        let intMag = buffArray[index!].magnification * 100
-                        let buffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) * Decimal(string: self.buffArray[index!].magnification)!)")!)}
+                        let buffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!)}
                         shopLists[i].shopList = buffedShopList
                     }
                 }
@@ -307,7 +307,9 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         //グラスモード -> false
         glassModeIsEnabled = false
         glassButton.tintColor = .systemGray
-//        print("glass mode is \(glassModeIsEnabled)")
+        
+        //グラスボタンの当たり判定
+        glassFrame.width = 40
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -336,7 +338,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if buffedCategory.contains(shopLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                    let debuffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) / Decimal(string: self.buffArray[index!].magnification)!)")!)}
+                    let debuffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) / (Decimal(string: self.buffArray[index!].magnification)! * 10) * 10)")!)}
                     shopLists[i].shopList = debuffedShopList
                 }
             }
@@ -361,7 +363,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             for i in 0..<shopLists.count {
                 if buffedCategory.contains(shopLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                    let buffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) * Decimal(string: self.buffArray[index!].magnification)!)")!)}
+                    let buffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!)}
                     shopLists[i].shopList = buffedShopList
                 }
             }
@@ -371,6 +373,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     // MARK: - StoryBoard
 
     @IBOutlet weak var pointLabel: UIBarLabel!
+    @IBOutlet weak var glassFrame: UIBarButtonItem!
     @IBOutlet weak var glassButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     
@@ -422,7 +425,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                         for i in 0..<buffedCategory.count {
                             if categoryText == buffedCategory[i] {
                                 let index = buffedCategory.firstIndex(of: categoryText)
-                                ptInt = Int("\(Decimal(ptInt) * Decimal(string: self.buffArray[index!].magnification)!)")!
+                                ptInt = Int("\(Decimal(ptInt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
                             }
                         }
                     }

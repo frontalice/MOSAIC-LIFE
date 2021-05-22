@@ -19,7 +19,7 @@ class BuffModalViewController: UIViewController, UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         if textField == magnificationLabel {
             let magCharas: String = (textField.text! as NSString).replacingCharacters(in: range, with: string)
-            if magCharas.count <= 3 {
+            if magCharas.count <= 4 {
                 return true
             }
             return false

@@ -83,6 +83,10 @@ class ViewController: UIViewController,UITextFieldDelegate {
             
             let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
             settings.set(archivedText, forKey: "DebugLog")
+            
+            // pphArray初期化
+            ptPerHourArray.removeAll()
+            settings.set(ptPerHourArray, forKey: "ptPerHourArray")
         } else {
             // テキストログ取得
             if let archivedLog = settings.object(forKey: "DebugLog") {
