@@ -34,9 +34,6 @@ class ViewController: UIViewController,UITextFieldDelegate {
         debugLog.layer.borderWidth = 1.0
         debugLog.layer.borderColor = UIColor.black.cgColor
         
-        //残pt読み込み
-        pointLabel.text = String(roadPoints())
-        
         let now = Date()
         let format = DateFormatter()
         var dateBorder: Date
@@ -87,6 +84,16 @@ class ViewController: UIViewController,UITextFieldDelegate {
             // pphArray初期化
             ptPerHourArray.removeAll()
             settings.set(ptPerHourArray, forKey: "ptPerHourArray")
+            
+            // プールpt処理
+            settings.register(defaults: ["poolingPoint" : 0])
+            if settings.integer(forKey: "storePoints") >= 1000 {
+                let pt = settings.integer(forKey: "storePoints")
+                var ppt = pt - 1000
+                settings.set(pt - ppt, forKey: "storePoints")
+                ppt = Int(Double(ppt + settings.integer(forKey: "poolingPoint")) * 1.05)
+                settings.set(ppt, forKey: "poolingPoint")
+            }
         } else {
             // テキストログ取得
             if let archivedLog = settings.object(forKey: "DebugLog") {
@@ -102,6 +109,10 @@ class ViewController: UIViewController,UITextFieldDelegate {
         
         print("日付変更線: \(dateBorder)\n現在: \(now)")
 
+        //残pt読み込み
+        pointLabel.text = String(roadPoints())
+        poolingPointLabel.text = "\(String(settings.integer(forKey: "poolingPoint"))) pts POOLing"
+        
         //バフログ書き込み
         writeBuffLog()
         
@@ -148,6 +159,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
         
         //残りptを更新
         pointLabel.text = String(roadPoints())
+        poolingPointLabel.text = "\(String(settings.integer(forKey: "poolingPoint"))) pts POOLing"
         
 //        writeDebugLog()
     }
@@ -266,6 +278,7 @@ class ViewController: UIViewController,UITextFieldDelegate {
     //MARK: - StoryBoard
     
     @IBOutlet weak var pointLabel: UITextField!
+    @IBOutlet weak var poolingPointLabel: UILabel!
     @IBOutlet weak var debugLog: UITextView!
     @IBOutlet weak var buffLog: UITextView!
     

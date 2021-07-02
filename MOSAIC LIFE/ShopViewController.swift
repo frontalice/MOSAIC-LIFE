@@ -21,6 +21,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     
     var isBuffApplicated: Bool = false
     
+    var poolingPoint = 0
+    
     //MARK: - TableView関連
 
     //セクション数
@@ -96,7 +98,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
      セクションが一致してない場合は空きセルの場所は変化しない（sourceIndexPathのまま）、的な？
     */
     
-    // isEditing = false: セルをタップでポイント獲得
+    // isEditing = false: セルをタップでポイント消費
     // isEditing = true:  既存セルの編集
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !self.tableView.isEditing {
@@ -107,12 +109,37 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             let consumeItem: String = shopLists[indexPath.section].shopList[indexPath.row].item
             let consumePoint: Int = shopLists[indexPath.section].shopList[indexPath.row].pt
             
+            if consumePoint > presentPoint {
+                if consumePoint > self.poolingPoint {
+                    //選択エフェクトを解除
+                    tableView.deselectRow(at: indexPath, animated: true)
+                    
+                    return
+                } else {
+                    let alert = UIAlertController(title: nil, message: "プールptで購入する？", preferredStyle: .alert)
+                    let alertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
+                        self.poolingPoint -= consumePoint
+                        setting.set(self.poolingPoint, forKey: "poolingPoint")
+                        self.pointLabel.title = "\(String(presentPoint)) pt / \(String(self.poolingPoint)) ppt"
+                        self.tableView.deselectRow(at: indexPath, animated: true)
+                    }
+                    alert.addAction(alertAction)
+                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel){
+                        (action: UIAlertAction) -> Void in
+                        tableView.deselectRow(at: indexPath, animated: true)
+                    })
+                    present(alert, animated: true, completion: nil)
+                    
+                    return
+                }
+            }
+            
             presentPoint -= consumePoint
             setting.set(presentPoint, forKey: "storePoints")
             setting.synchronize()
             
             // 画面左下のラベルを更新
-            pointLabel.title = "\(String(presentPoint)) pt"
+            pointLabel.title = "\(String(presentPoint)) pt / \(String(self.poolingPoint)) ppt"
             
             //ライフログを直接更新
             //メイン画面vcにexchangedPtHistoryを渡す
@@ -145,7 +172,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                 pt.placeholder = "Points"
                 pt.text = String(self.shopLists[indexPath.section].shopList[indexPath.row].pt)
             }
-            var alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
+            let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
                 let itemTf = alert.textFields![0]
                 let ptTf = alert.textFields![1]
                 if let itemText = itemTf.text, let ptText = ptTf.text {
@@ -302,7 +329,10 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         // 残りptを取得
         let setting = UserDefaults.standard
         let presentPoint: Int = setting.integer(forKey: "storePoints")
-        pointLabel.title = "\(String(presentPoint)) pt"
+        if setting.object(forKey: "poolingPoint") != nil {
+            self.poolingPoint = setting.integer(forKey: "poolingPoint")
+        }
+        pointLabel.title = "\(String(presentPoint)) pt / \(String(self.poolingPoint)) ppt"
         
         //グラスモード -> false
         glassModeIsEnabled = false
