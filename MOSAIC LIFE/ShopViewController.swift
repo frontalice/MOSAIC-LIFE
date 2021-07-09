@@ -40,11 +40,33 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         return shopLists[section].listName
     }
     
+    //セクションヘッダの色
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        view.tintColor = UIColor.systemGreen
+    }
+    
     //セルの生成
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .value1, reuseIdentifier: "")
         cell.textLabel?.text = shopLists[indexPath.section].shopList[indexPath.row].item
         cell.detailTextLabel?.text = String(shopLists[indexPath.section].shopList[indexPath.row].pt)
+        
+        if shopLists[indexPath.section].shopList[indexPath.row].pt > userDefaults.integer(forKey: "storePoints") {
+            cell.backgroundColor = UIColor.systemGray
+        }
+        
+        if userDefaults.integer(forKey: "poolingPoint") >= shopLists[indexPath.section].shopList[indexPath.row].pt && shopLists[indexPath.section].shopList[indexPath.row].pt > userDefaults.integer(forKey: "storePoints") {
+            cell.backgroundColor = UIColor {_ in return #colorLiteral(red: 0.3529411765, green: 1, blue: 0.9803921569, alpha: 1)}
+        }
+        
+//        if userDefaults.integer(forKey: "storePoints") >= shopLists[indexPath.section].shopList[indexPath.row].pt {
+//            cell.backgroundColor = UIColor.white
+//        }
+        
+        if shopLists[indexPath.section].shopList[indexPath.row].item.range(of: "\u{1F512}") != nil {
+            cell.backgroundColor = UIColor.systemGray
+        }
+        
         return cell
     }
     
@@ -53,6 +75,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         super .setEditing(editing, animated: true)
         self.tableView.setEditing(editing, animated: true)
         disableGlassMode()
+        tableView.reloadData()
     }
     
     //削除できるセル: 全部
@@ -82,7 +105,18 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         let targetCell = shopLists[sourceIndexPath.section].shopList[sourceIndexPath.row]
         shopLists[sourceIndexPath.section].shopList.remove(at: sourceIndexPath.row)
         shopLists[destinationIndexPath.section].shopList.insert(targetCell, at: destinationIndexPath.row)
+        if shopLists[sourceIndexPath.section].shopList.count == 0 {
+            shopLists.remove(at: sourceIndexPath.section)
+            tableView.deleteSections(IndexSet(integer: sourceIndexPath.section), with: .automatic)
+        }
         saveTableViewData()
+    }
+    
+    func deleteSectionIfCountIsZero(tableView: UITableView, indexPath: IndexPath) {
+        if shopLists[indexPath.section].shopList.count == 0 {
+            shopLists.remove(at: indexPath.section)
+            tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
+        }
     }
     
 //    //セル移動の制限: とりあえず同セクション間での移動のみに留める
@@ -121,6 +155,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                         self.poolingPoint -= consumePoint
                         setting.set(self.poolingPoint, forKey: "poolingPoint")
                         self.pointLabel.title = "\(String(presentPoint)) pt / \(String(self.poolingPoint)) ppt"
+                        self.tableView.reloadData()
                         self.tableView.deselectRow(at: indexPath, animated: true)
                     }
                     alert.addAction(alertAction)
@@ -136,7 +171,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             
             presentPoint -= consumePoint
             setting.set(presentPoint, forKey: "storePoints")
-            setting.synchronize()
+            tableView.reloadData()
             
             // 画面左下のラベルを更新
             pointLabel.title = "\(String(presentPoint)) pt / \(String(self.poolingPoint)) ppt"
@@ -170,7 +205,24 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             }
             alert.addTextField { (pt: UITextField) -> Void in
                 pt.placeholder = "Points"
-                pt.text = String(self.shopLists[indexPath.section].shopList[indexPath.row].pt)
+                
+                // バフ適用時、ptを初期化
+                var rawpt = self.shopLists[indexPath.section].shopList[indexPath.row].pt
+                
+                if self.isBuffApplicated {
+                    if let txt = alert.textFields![0].text {
+                        rawpt = self.disableSingleBuff(text: txt, num: rawpt, k: indexPath.section)
+//                        if txt.range(of: "\u{1F4B0}") == nil {
+//                            let buffedCategory = self.buffArray.map{$0.category}
+//                            if buffedCategory.contains(self.shopLists[indexPath.section].listName) {
+//                                let index = buffedCategory.firstIndex(of: self.shopLists[indexPath.section].listName)
+//                                rawpt = Int("\(Decimal(rawpt) / (Decimal(string: self.buffArray[index!].magnification)! * 10) * 10)")!
+//                            }
+//                        }
+                    }
+                }
+                pt.text = String(rawpt)
+                
             }
             let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
                 let itemTf = alert.textFields![0]
@@ -179,14 +231,18 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                     if var ptInt = Int(ptText) {
                         //バフ適用対象の場合、バフをかける
                         if self.isBuffApplicated {
-                            let buffedCategory = self.buffArray.map{$0.category}
-                            for i in 0..<buffedCategory.count {
-                                if self.shopLists[indexPath.section].listName == buffedCategory[i] {
-                                    let index = buffedCategory.firstIndex(of: self.shopLists[indexPath.section].listName)
-    //                                let intMag = self.buffArray[index!].magnification * 100.0
-                                    ptInt = Int("\(Decimal(ptInt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
-                                }
-                            }
+                            ptInt = self.applySingleBuff(text: itemText, category: self.shopLists[indexPath.section].listName, num: ptInt)
+                            
+//                            if itemText.range(of: "\u{1F4B0}") == nil {
+//                                let buffedCategory = self.buffArray.map{$0.category}
+//                                for i in 0..<buffedCategory.count {
+//                                    if self.shopLists[indexPath.section].listName == buffedCategory[i] {
+//                                        let index = buffedCategory.firstIndex(of: self.shopLists[indexPath.section].listName)
+//                                        //                                let intMag = self.buffArray[index!].magnification * 100.0
+//                                        ptInt = Int("\(Decimal(ptInt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
+//                                    }
+//                                }
+//                            }
                         }
                         
                         self.shopLists[indexPath.section].shopList[indexPath.row].item = itemText
@@ -275,6 +331,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
 
         // Do any additional setup after loading the view.
         
+        navigationController?.navigationBar.barTintColor = UIColor.systemGreen
+        
         // +とEditボタン追加
         let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
 //        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
@@ -308,15 +366,23 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! String, category: $0["category"] as! String, date: $0["date"] as! Date)}
             if !buffArray.isEmpty {
                 isBuffApplicated = true
-                let buffedCategory = buffArray.map{$0.category}
-                for i in 0..<shopLists.count {
-                    if buffedCategory.contains(shopLists[i].listName) {
-                        let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-//                        let intMag = buffArray[index!].magnification * 100
-                        let buffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!)}
-                        shopLists[i].shopList = buffedShopList
-                    }
-                }
+                applyMultiBuff()
+                
+//                let buffedCategory = buffArray.map{$0.category}
+//                for i in 0..<shopLists.count {
+//                    if buffedCategory.contains(shopLists[i].listName) {
+//                        let index = buffedCategory.firstIndex(of: shopLists[i].listName)
+////                        let intMag = buffArray[index!].magnification * 100
+//                        for n in 0..<shopLists[i].shopList.count {
+//                            if shopLists[i].shopList[n].item.range(of: "\u{1F4B0}") == nil {
+//                                shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
+//                            }
+//                        }
+//
+////                        let buffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!)}
+////                        shopLists[i].shopList = buffedShopList
+//                    }
+//                }
             }
         }
         
@@ -342,34 +408,66 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         glassFrame.width = 40
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        
-    }
+//    override func viewDidAppear(_ animated: Bool) {
+//
+//    }
+//
+//    override func viewWillDisappear(_ animated: Bool) {
+//
+//    }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        
-    }
+    // MARK: - バフ関連
     
     func makeRawData() {
+        
         //バフされたptの初期化: グラスモード
         if glassModeIsEnabled {
-            for i in 0..<shopLists.count {
-                if shopLists[i].listName.contains("Coding") {
-                    for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / 0.9)")!
-                    }
-                }
-            }
+            disableGlassMode()
         }
         
         //バフされたptの初期化: Settingバフ
         if isBuffApplicated {
-            let buffedCategory = buffArray.map{$0.category}
+            disableMultiBuff()
+        }
+        
+        tableView.reloadData()
+    }
+    
+    func disableMultiBuff(){
+        let buffedCategory = buffArray.map{$0.category}
+        for i in 0..<shopLists.count {
+            if buffedCategory.contains(shopLists[i].listName) {
+                let index = buffedCategory.firstIndex(of: shopLists[i].listName)
+                for n in 0..<shopLists[i].shopList.count {
+                    if shopLists[i].shopList[n].item.range(of: "\u{1F4B0}") == nil {
+                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / (Decimal(string: self.buffArray[index!].magnification)! * 10) * 10)")!
+                    }
+                }
+            }
+        }
+    }
+    
+    func disableSingleBuff(text: String, num: Int, k: Int) -> Int{
+        if text.range(of: "\u{1F4B0}") == nil {
+            let buffedCategory = self.buffArray.map{$0.category}
+            if buffedCategory.contains(self.shopLists[k].listName) {
+                let index = buffedCategory.firstIndex(of: self.shopLists[k].listName)
+                return Int("\(Decimal(num) / (Decimal(string: self.buffArray[index!].magnification)! * 10) * 10)")!
+            }
+        }
+        return num
+    }
+    
+    func disableGlassMode(){
+        if glassModeIsEnabled == true {
+            glassModeIsEnabled = false
             for i in 0..<shopLists.count {
-                if buffedCategory.contains(shopLists[i].listName) {
-                    let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                    let debuffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) / (Decimal(string: self.buffArray[index!].magnification)! * 10) * 10)")!)}
-                    shopLists[i].shopList = debuffedShopList
+                if shopLists[i].listName.contains("Gaming") {
+                    for n in 0..<shopLists[i].shopList.count {
+                        if shopLists[i].shopList[n].item.range(of: "\u{1F4B0}") == nil {
+                            shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / 0.9)")!
+                        }
+                    }
                 }
             }
         }
@@ -378,23 +476,50 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     func enchantData() {
         //グラスモード
         if glassModeIsEnabled {
-            for i in 0..<shopLists.count {
-                if shopLists[i].listName.contains("Coding") {
-                    for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) * 0.9)")!
-                    }
-                }
-            }
+            applyGlassMode()
         }
         
         //Settingバフ
         if isBuffApplicated {
-            let buffedCategory = buffArray.map{$0.category}
-            for i in 0..<shopLists.count {
-                if buffedCategory.contains(shopLists[i].listName) {
-                    let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-                    let buffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!)}
-                    shopLists[i].shopList = buffedShopList
+            applyMultiBuff()
+        }
+        
+        tableView.reloadData()
+    }
+    
+    func applyMultiBuff(){
+        let buffedCategory = buffArray.map{$0.category}
+        for i in 0..<shopLists.count {
+            if buffedCategory.contains(shopLists[i].listName) {
+                let index = buffedCategory.firstIndex(of: shopLists[i].listName)
+                for n in 0..<shopLists[i].shopList.count {
+                    if shopLists[i].shopList[n].item.range(of: "\u{1F4B0}") == nil {
+                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    func applySingleBuff(text: String, category: String, num: Int) -> Int{
+        if text.range(of: "\u{1F4B0}") == nil {
+            let buffedCategory = self.buffArray.map{$0.category}
+            if buffedCategory.contains(category) {
+                let index = buffedCategory.firstIndex(of: category)
+                return Int("\(Decimal(num) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
+            }
+        }
+        return num
+    }
+    
+    func applyGlassMode() {
+        for i in 0..<shopLists.count {
+            if shopLists[i].listName.contains("Gaming") {
+                for n in 0..<shopLists[i].shopList.count {
+                    if shopLists[i].shopList[n].item.range(of: "\u{1F4B0}") == nil {
+                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) * 0.9)")!
+                    }
                 }
             }
         }
@@ -412,6 +537,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     //ミッションを追加: alertで入力
     @objc func plusButtonTapped(_ sender: UIBarButtonItem){
         disableGlassMode()
+        tableView.reloadData()
         let alert = UIAlertController(title: "Itemの追加", message: "Item名と消費ptを入力", preferredStyle: .alert)
         alert.addTextField { (item: UITextField) -> Void in
             item.placeholder = "Item Name"
@@ -451,13 +577,17 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                 if var ptInt: Int = Int(ptText) {
                     // バフ適用中のカテゴリに追加する場合
                     if self.isBuffApplicated {
-                        let buffedCategory = self.buffArray.map{$0.category}
-                        for i in 0..<buffedCategory.count {
-                            if categoryText == buffedCategory[i] {
-                                let index = buffedCategory.firstIndex(of: categoryText)
-                                ptInt = Int("\(Decimal(ptInt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
-                            }
-                        }
+                        ptInt = self.applySingleBuff(text: itemText, category: categoryText, num: ptInt)
+                        
+//                        let buffedCategory = self.buffArray.map{$0.category}
+//                        for i in 0..<buffedCategory.count {
+//                            if categoryText == buffedCategory[i] {
+//                                if itemText.range(of: "\u{1F4B0}") == nil {
+//                                    let index = buffedCategory.firstIndex(of: categoryText)
+//                                    ptInt = Int("\(Decimal(ptInt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
+//                                }
+//                            }
+//                        }
                     }
                     // 既存のカテゴリに追加する場合 -> そのまま
                     if sectionTf.text != "新しいカテゴリを追加" {
@@ -484,41 +614,22 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     
     var glassModeIsEnabled : Bool = false
     
-    func disableGlassMode(){
-        if glassModeIsEnabled == true {
-            glassModeIsEnabled = false
-            for i in 0..<shopLists.count {
-                if shopLists[i].listName.contains("Gaming") {
-                    for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / 0.9)")!
-                    }
-                    tableView.reloadData()
-                }
-            }
-        }
-    }
-    
     @IBAction func glassButtonTapped(_ sender: Any) {
         glassModeIsEnabled = !glassModeIsEnabled
 //        print("glass button tapped, glassmode is \(glassModeIsEnabled)")
         
         if glassModeIsEnabled == true {
             glassButton.tintColor = .systemBlue
-            for i in 0..<shopLists.count {
-                if shopLists[i].listName.contains("Gaming") {
-                    for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) * 0.9)")!
-                    }
-                    tableView.reloadData()
-//                    print(shopLists[i].shopList)
-                }
-            }
+            applyGlassMode()
+            tableView.reloadData()
         } else {
             glassButton.tintColor = .systemGray
             for i in 0..<shopLists.count {
                 if shopLists[i].listName.contains("Gaming") {
                     for n in 0..<shopLists[i].shopList.count {
-                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / 0.9)")!
+                        if shopLists[i].shopList[n].item.range(of: "\u{1F4B0}") == nil {
+                            shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / 0.9)")!
+                        }
                     }
                     tableView.reloadData()
                 }

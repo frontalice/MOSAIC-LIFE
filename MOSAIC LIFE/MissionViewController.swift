@@ -36,6 +36,11 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         return missionLists[section].listName
     }
     
+    //セクションヘッダの色
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        view.tintColor = UIColor.systemTeal
+    }
+    
     //セルの生成
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .value1, reuseIdentifier: "")
@@ -143,9 +148,21 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             }
             alert.addTextField { (pt: UITextField) -> Void in
                 pt.placeholder = "Points"
-                pt.text = String(self.missionLists[indexPath.section].missionList[indexPath.row].pt)
+                
+                // バフ適用時、ptを初期化
+                var rawpt = self.missionLists[indexPath.section].missionList[indexPath.row].pt
+                
+                if self.isBuffApplicated {
+                    let buffedCategory = self.buffArray.map{$0.category}
+                    if buffedCategory.contains(self.missionLists[indexPath.section].listName) {
+                        let index = buffedCategory.firstIndex(of: self.missionLists[indexPath.section].listName)
+                        rawpt = Int("\(Decimal(rawpt) / (Decimal(string: self.buffArray[index!].magnification)! * 10) * 10)")!
+                    }
+                }
+                
+                pt.text = String(rawpt)
             }
-            var alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
+            let alertAction : UIAlertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
                 let missionTf = alert.textFields![0]
                 let ptTf = alert.textFields![1]
                 if let missionText = missionTf.text, let ptText = ptTf.text {
@@ -246,6 +263,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 
         // Do any additional setup after loading the view.
         
+        navigationController?.navigationBar.barTintColor = UIColor.systemTeal
+        
         // +とEditボタン追加
         let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
 //        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
@@ -337,7 +356,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             for i in 0..<missionLists.count {
                 if buffedCategory.contains(missionLists[i].listName) {
                     let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-                    print("self.buffArray[index!].magnification: \(self.buffArray[index!].magnification)")
                     let debuffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) / (Decimal(string: self.buffArray[index!].magnification)! * 10) * 10)")!)}
                     missionLists[i].missionList = debuffedMissionList
                 }
@@ -383,7 +401,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     @objc func plusButtonTapped(_ sender: UIBarButtonItem){
         
         disableGlassMode()
-        
         let alert = UIAlertController(title: "Todoの追加", message: "ToDo名と報酬ptを入力", preferredStyle: .alert)
         
         alert.addTextField { (mission: UITextField) -> Void in

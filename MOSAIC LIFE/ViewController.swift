@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController,UITextFieldDelegate {
+class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     
     let settings = UserDefaults.standard
     
@@ -33,6 +33,11 @@ class ViewController: UIViewController,UITextFieldDelegate {
         buffLog.layer.borderColor = UIColor.black.cgColor
         debugLog.layer.borderWidth = 1.0
         debugLog.layer.borderColor = UIColor.black.cgColor
+        
+        self.debugLog.delegate = self
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         
         let now = Date()
         let format = DateFormatter()
@@ -74,17 +79,6 @@ class ViewController: UIViewController,UITextFieldDelegate {
             // dateBorderを日本時間で取得
             format.dateFormat = DateFormatter.dateFormat(fromTemplate: "MMMdHm", options: 0, locale: Locale(identifier: "ja_JP"))
             
-            // テキストログ初期化
-            self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n日付変更線: \(format.string(from: dateBorder))\n----------------------------------------------------\n")
-            debugLog.attributedText = attrText
-            
-            let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
-            settings.set(archivedText, forKey: "DebugLog")
-            
-            // pphArray初期化
-            ptPerHourArray.removeAll()
-            settings.set(ptPerHourArray, forKey: "ptPerHourArray")
-            
             // プールpt処理
             settings.register(defaults: ["poolingPoint" : 0])
             if settings.integer(forKey: "storePoints") >= 1000 {
@@ -93,6 +87,19 @@ class ViewController: UIViewController,UITextFieldDelegate {
                 settings.set(pt - ppt, forKey: "storePoints")
                 ppt = Int(Double(ppt + settings.integer(forKey: "poolingPoint")) * 1.05)
                 settings.set(ppt, forKey: "poolingPoint")
+            
+            // テキストログ初期化
+            self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n----------------------------------------------------\n")
+            // self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n日付変更線: \(format.string(from: dateBorder))\n----------------------------------------------------\n")
+            debugLog.attributedText = attrText
+            
+            let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
+            settings.set(archivedText, forKey: "DebugLog")
+            
+            // pphArray初期化
+            ptPerHourArray.removeAll()
+            settings.set(ptPerHourArray, forKey: "ptPerHourArray")
+                
             }
         } else {
             // テキストログ取得
@@ -157,11 +164,22 @@ class ViewController: UIViewController,UITextFieldDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         
+        navigationController?.navigationBar.barTintColor = UIColor.secondarySystemBackground
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        
         //残りptを更新
         pointLabel.text = String(roadPoints())
         poolingPointLabel.text = "\(String(settings.integer(forKey: "poolingPoint"))) pts POOLing"
         
 //        writeDebugLog()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     func writeDebugLog(){
@@ -324,5 +342,33 @@ class ViewController: UIViewController,UITextFieldDelegate {
         let time = dateFormatter.string(from: date)
         return time
     }
+    
+    @objc func keyboardWillShow(notification: NSNotification) {
+            if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+                if self.view.frame.origin.y == 0 {
+                    self.view.frame.origin.y -= keyboardSize.height
+                } else {
+                    let suggestionHeight = self.view.frame.origin.y + keyboardSize.height
+                    self.view.frame.origin.y -= suggestionHeight
+                }
+            }
+        }
+        
+    @objc func keyboardWillHide() {
+        if self.view.frame.origin.y != 0 {
+            self.view.frame.origin.y = 0
+        }
+    }
 }
 
+extension ViewController {
+    
+    func textViewDidEndEditing(_ textView: UITextView) {
+        if textView == debugLog {
+            attrText = debugLog.attributedText!.mutableCopy() as! NSMutableAttributedString
+            let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
+            settings.set(archivedText, forKey: "DebugLog")
+        }
+    }
+    
+}
