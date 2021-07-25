@@ -299,6 +299,19 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             }
         }
         
+        // CoreData全消去
+//        let contxt = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+//
+//        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "MissionData")
+//        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+//
+//        do {
+//            try contxt.execute(deleteRequest)
+//            try contxt.save()
+//        } catch  {
+//            print("Failed to Delete MissionData.")
+//        }
+        
         // CoreData移行プロセス
 //        let appDelegate = UIApplication.shared.delegate as! AppDelegate
 //        let context = appDelegate.persistentContainer.viewContext
