@@ -8,7 +8,7 @@
 import UIKit
 import CoreData
 
-class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDataSource,UIPickerViewDelegate, UIPickerViewDataSource {
+class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDataSource,UIPickerViewDelegate, UIPickerViewDataSource, NSFetchedResultsControllerDelegate {
     
     //MARK: - 保存データ関連
     
@@ -21,20 +21,46 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     
     var isBuffApplicated: Bool = false
     
+    //MARK: - CoreData関連
+    lazy var fetchedResultsController:NSFetchedResultsController<MissionData> = {
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let fetchRequest:NSFetchRequest<MissionData> = MissionData.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \MissionData.category, ascending: true)]
+        let fetchedResultsController = NSFetchedResultsController<MissionData>(fetchRequest: fetchRequest, managedObjectContext:context, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController.delegate = self
+        try! fetchedResultsController.performFetch()
+        return fetchedResultsController
+    }()
+    
     //MARK: - TableView関連
     //セクション数
     func numberOfSections(in tableView: UITableView) -> Int {
-        return missionLists.count
+        if let count = fetchedResultsController.sections?.count {
+            return count
+        }
+        print("Counting Number Of Sections Failed.")
+        return 0
+//        return missionLists.count
     }
     
     //セクション内のセルはいくつ？
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return missionLists[section].missionList.count
+        guard let sections = fetchedResultsController.sections else {
+            fatalError("No sections in fetchedResultsController")
+        }
+        let targetSection = sections[section]
+        return targetSection.numberOfObjects
+//        return missionLists[section].missionList.count
     }
     
     //セクション名
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return missionLists[section].listName
+        guard let sections = fetchedResultsController.sections else {
+            fatalError("No sections in fetchedResultsController")
+        }
+        let targetSection = sections[section]
+        return targetSection.name
+//        return missionLists[section].listName
     }
     
     //セクションヘッダの色
@@ -45,8 +71,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     //セルの生成
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .value1, reuseIdentifier: "")
-        cell.textLabel?.text = missionLists[indexPath.section].missionList[indexPath.row].mission
-        cell.detailTextLabel?.text = String(missionLists[indexPath.section].missionList[indexPath.row].pt)
+        cell.textLabel?.text = fetchedResultsController.object(at: indexPath).missionName!
+        cell.detailTextLabel?.text = String(fetchedResultsController.object(at: indexPath).pt)
         return cell
     }
     
