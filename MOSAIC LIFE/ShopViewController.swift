@@ -14,6 +14,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     
     let userDefaults = UserDefaults.standard
     var shopLists: [(shopList: [(item: String, pt: Int)], listName: String)] = [([("ポイントを消費", 100)],"TestSection")]
+    var ptList: [String : [Int]] = ["":[]]
 //    var shopList = [(item: String, pt: Int)]()
     var consumedPtHistory = Array<(item:String, pt:Int)>()
     
@@ -22,6 +23,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     var isBuffApplicated: Bool = false
     
     var poolingPoint = 0
+    var moneyMultiplier = 1.0
     
     //MARK: - TableView関連
 
@@ -331,6 +333,8 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
 
         // Do any additional setup after loading the view.
         
+        userDefaults.register(defaults: ["moneyMultiplier" : 2.0])
+        
         navigationController?.navigationBar.barTintColor = UIColor.systemGreen
         
         // +とEditボタン追加
@@ -361,28 +365,19 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             }
         }
         
+        //ptListsに反映
+        for i in 0..<shopLists.count {
+            var ptArray = Array<Int>()
+            shopLists[i].shopList.forEach({elem in ptArray.append(elem.pt)})
+            ptList.updateValue(ptArray, forKey: shopLists[i].listName)
+        }
+        
         // バフ: userDefaultsから取得
         if let dicList = userDefaults.object(forKey: "buffData") as? [[String : Any]] {
             self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! String, category: $0["category"] as! String, date: $0["date"] as! Date)}
             if !buffArray.isEmpty {
                 isBuffApplicated = true
                 applyMultiBuff()
-                
-//                let buffedCategory = buffArray.map{$0.category}
-//                for i in 0..<shopLists.count {
-//                    if buffedCategory.contains(shopLists[i].listName) {
-//                        let index = buffedCategory.firstIndex(of: shopLists[i].listName)
-////                        let intMag = buffArray[index!].magnification * 100
-//                        for n in 0..<shopLists[i].shopList.count {
-//                            if shopLists[i].shopList[n].item.range(of: "\u{1F4B0}") == nil {
-//                                shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
-//                            }
-//                        }
-//
-////                        let buffedShopList = shopLists[i].shopList.map{($0.item, Int("\(Decimal($0.pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!)}
-////                        shopLists[i].shopList = buffedShopList
-//                    }
-//                }
             }
         }
         
@@ -408,9 +403,10 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         glassFrame.width = 40
     }
     
-//    override func viewDidAppear(_ animated: Bool) {
-//
-//    }
+    override func viewWillAppear(_ animated: Bool) {
+        moneyMultiplier = userDefaults.double(forKey: "moneyMultiplier")
+        moneyMutiplierButton.title = "x\(moneyMultiplier)"
+    }
 //
 //    override func viewWillDisappear(_ animated: Bool) {
 //
@@ -531,6 +527,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     @IBOutlet weak var glassFrame: UIBarButtonItem!
     @IBOutlet weak var glassButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var moneyMutiplierButton: UIBarButtonItem!
     
     //MARK: - UI部品
     
@@ -578,16 +575,6 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                     // バフ適用中のカテゴリに追加する場合
                     if self.isBuffApplicated {
                         ptInt = self.applySingleBuff(text: itemText, category: categoryText, num: ptInt)
-                        
-//                        let buffedCategory = self.buffArray.map{$0.category}
-//                        for i in 0..<buffedCategory.count {
-//                            if categoryText == buffedCategory[i] {
-//                                if itemText.range(of: "\u{1F4B0}") == nil {
-//                                    let index = buffedCategory.firstIndex(of: categoryText)
-//                                    ptInt = Int("\(Decimal(ptInt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!
-//                                }
-//                            }
-//                        }
                     }
                     // 既存のカテゴリに追加する場合 -> そのまま
                     if sectionTf.text != "新しいカテゴリを追加" {
@@ -637,6 +624,31 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         }
     }
     
+    @IBAction func moneyMultiplierButtonTapped(_ sender: Any) {
+        let alert = UIAlertController(title: "倍率変更", message: nil, preferredStyle: .alert)
+        alert.addTextField { (tf: UITextField) -> Void in
+            tf.placeholder = "Money Multiplier"
+        }
+        alert.textFields![0].text = String(self.moneyMultiplier)
+        
+        let alertAction = UIAlertAction(title: "OK", style: .default) {(action: UIAlertAction) -> Void in
+            if let text = alert.textFields![0].text {
+                if let num = Double(text) {
+                    self.moneyMultiplier = num
+                    self.userDefaults.set(num, forKey: "moneyMultiplier")
+                    self.moneyMutiplierButton.title = "x\(num)"
+                } else {
+                    self.showAlert("不正な入力です")
+                }
+            } else {
+                self.showAlert("不正な入力です")
+            }
+        }
+        alert.addAction(alertAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+
     //　アラート: エラー表示
     func showAlert(_ message: String){
         let alert : UIAlertController = UIAlertController(title: "警告", message: message, preferredStyle: .alert)

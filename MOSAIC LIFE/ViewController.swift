@@ -19,6 +19,8 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     
     var buffArray: [(buffName: String, magnification: String, category: String, date: Date)] = Array<(String, String, String, Date)>()
     
+    var pptMultiplier = 1.05
+    
     //MARK: - ライフサイクル
     
     // 起動時処理
@@ -43,6 +45,10 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         let format = DateFormatter()
         var dateBorder: Date
         
+        settings.register(defaults: ["poolingPoint" : 0, "pptMultiplier" : 1.05])
+        pptMultiplier = settings.double(forKey: "pptMultiplier")
+        pptMultiplierLabel.text = String(pptMultiplier)
+        
         // dateBorderの取得、nilなら明日4時に設定
         if let savedDateBorder: Date = settings.object(forKey: "DateBorder") as! Date? {
 //            print(savedDateBorder)
@@ -57,7 +63,6 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         // バフログ: userDefaultsから取得
         if let dicList = settings.object(forKey: "buffData") as? [[String : Any]] {
             self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! String, category: $0["category"] as! String, date: $0["date"] as! Date)}
-            print("消去前: \(buffArray)")
         }
         
         // 期限超過のバフ消去
@@ -80,19 +85,44 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             format.dateFormat = DateFormatter.dateFormat(fromTemplate: "MMMdHm", options: 0, locale: Locale(identifier: "ja_JP"))
             
             // プールpt処理
-            settings.register(defaults: ["poolingPoint" : 0])
-            if settings.integer(forKey: "storePoints") >= 1000 {
-                let pt = settings.integer(forKey: "storePoints")
-                var ppt = pt - 1000
-                settings.set(pt - ppt, forKey: "storePoints")
-                ppt = Int(Double(ppt + settings.integer(forKey: "poolingPoint")) * 1.05)
-                settings.set(ppt, forKey: "poolingPoint")
+//            if settings.integer(forKey: "storePoints") >= 1000 {
+//                let pt = settings.integer(forKey: "storePoints") // 前日の獲得pt
+//                let ppt = pt - 1000 // ppt移行分
+//                settings.set(pt - ppt, forKey: "storePoints")
+//                let pptYesterday = settings.integer(forKey: "poolingPoint")
+//                var pptToday = Int(Double(ppt + pptYesterday) * pptMultiplier)
+//                if pptToday > 100000 { pptToday = 100000 }
+//                settings.set(pptToday, forKey: "poolingPoint")
+//                self.attrText.insert(NSMutableAttributedString(string: "ppt変換: (\(pptYesterday) + \(ppt)) * \(self.pptMultiplier) → \(pptToday)pts\n"), at: attrText.length)
+//            } else {
+//                let pptYesterday = settings.integer(forKey: "poolingPoint")
+//                var pptToday = Int(Double(pptYesterday) * pptMultiplier)
+//                if pptToday > 100000 { pptToday = 100000 }
+//                settings.set(pptToday, forKey: "poolingPoint")
+//                self.attrText.insert(NSMutableAttributedString(string: "ppt変換: \(pptYesterday) * \(self.pptMultiplier) → \(pptToday)pts\n"), at: attrText.length)
+//            }
+            
+            // プールpt処理（1000pt以下対応版）
+            let pt = settings.integer(forKey: "storePoints") // 前日の獲得pt
+            var ppt = pt - 1000
+            if ppt <= 0 { ppt = 0 }
+            settings.set(pt - ppt, forKey: "storePoints")
+            let pptYesterday = settings.integer(forKey: "poolingPoint")
+            var pptToday = Int(Double(ppt + pptYesterday) * pptMultiplier)
+            if pptToday > 100000 { pptToday = 100000 }
+            settings.set(pptToday, forKey: "poolingPoint")
+            self.attrText.insert(NSMutableAttributedString(string: "ppt変換: (\(pptYesterday) + \(ppt)) * \(self.pptMultiplier) → \(pptToday)pts\n"), at: attrText.length)
+            
             
             // テキストログ初期化
-            self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n----------------------------------------------------\n")
-            // self.attrText = NSMutableAttributedString(string: "日付が更新されました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n日付変更線: \(format.string(from: dateBorder))\n----------------------------------------------------\n")
-            debugLog.attributedText = attrText
+            self.attrText.insert(NSMutableAttributedString(string:
+                "日付が更新されました。\n" +
+                "[\(catchTime())] 現在: \(String(roadPoints()))pts\n" +
+                "----------------------------------------------------\n")
+            , at:attrText.length)
             
+            // 初期化したテキストログを保存
+            debugLog.attributedText = attrText
             let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
             settings.set(archivedText, forKey: "DebugLog")
             
@@ -100,7 +130,6 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             ptPerHourArray.removeAll()
             settings.set(ptPerHourArray, forKey: "ptPerHourArray")
                 
-            }
         } else {
             // テキストログ取得
             if let archivedLog = settings.object(forKey: "DebugLog") {
@@ -113,8 +142,6 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
                 debugLog.attributedText = attrText
             }
         }
-        
-        print("日付変更線: \(dateBorder)\n現在: \(now)")
 
         //残pt読み込み
         pointLabel.text = String(roadPoints())
@@ -299,6 +326,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     @IBOutlet weak var poolingPointLabel: UILabel!
     @IBOutlet weak var debugLog: UITextView!
     @IBOutlet weak var buffLog: UITextView!
+    @IBOutlet weak var pptMultiplierLabel: UITextField!
     
     @IBAction func whenPointLabelEdited(_ sender: UITextField) {
         if pointLabel.text?.isEmpty != true {
@@ -320,6 +348,14 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         present(alert, animated: true, completion: nil)
     }
+    
+    @IBAction func whenPptMultiplierLabelEdited(_ sender: Any) {
+        if let text = pptMultiplierLabel.text {
+            pptMultiplier = Double(text)!
+            settings.set(Double(text), forKey: "pptMultiplier")
+        }
+    }
+    
     
     //MARK: - func
     // 現在ptを読み込み
@@ -344,6 +380,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     }
     
     @objc func keyboardWillShow(notification: NSNotification) {
+        if debugLog.isFirstResponder {
             if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
                 if self.view.frame.origin.y == 0 {
                     self.view.frame.origin.y -= keyboardSize.height
@@ -353,10 +390,13 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
                 }
             }
         }
+    }
         
     @objc func keyboardWillHide() {
-        if self.view.frame.origin.y != 0 {
-            self.view.frame.origin.y = 0
+        if debugLog.isFirstResponder {
+            if self.view.frame.origin.y != 0 {
+                self.view.frame.origin.y = 0
+            }
         }
     }
 }

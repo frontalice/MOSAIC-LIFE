@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="18154" systemVersion="20F71" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="MissionData" representedClassName="MissionData" syncable="YES" codeGenerationType="class">
+        <attribute name="category" optional="YES" attributeType="String"/>
+        <attribute name="missionName" optional="YES" attributeType="String"/>
+        <attribute name="multiplier" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="pt" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <elements>
+        <element name="MissionData" positionX="-63" positionY="-18" width="128" height="89"/>
+    </elements>
+</model>

@@ -17,6 +17,7 @@
 		A842C60C260888C60001750A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A842C60A260888C60001750A /* LaunchScreen.storyboard */; };
 		A842C6152608C9F70001750A /* ShopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C6142608C9F70001750A /* ShopViewController.swift */; };
 		A842C6182608CA0B0001750A /* MissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A842C6172608CA0B0001750A /* MissionViewController.swift */; };
+		A84439B426ABD1EA00C8A7AA /* MOSAIC_LIFE.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A84439B126ABD1EA00C8A7AA /* MOSAIC_LIFE.xcdatamodeld */; };
 		A84A75D32642A45E00671616 /* CustomUILabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A84A75D22642A45E00671616 /* CustomUILabel.swift */; };
 		A8D15460264681BC0084B0A5 /* UIBarLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D1545F264681BC0084B0A5 /* UIBarLabel.swift */; };
 /* End PBXBuildFile section */
@@ -35,6 +36,8 @@
 		A842C60D260888C60001750A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A842C6142608C9F70001750A /* ShopViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopViewController.swift; sourceTree = "<group>"; };
 		A842C6172608CA0B0001750A /* MissionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionViewController.swift; sourceTree = "<group>"; };
+		A84439B226ABD1EA00C8A7AA /* MOSAIC_LIFE.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MOSAIC_LIFE.xcdatamodel; sourceTree = "<group>"; };
+		A84439B326ABD1EA00C8A7AA /* MissionListModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MissionListModel.xcdatamodel; sourceTree = "<group>"; };
 		A84A75D22642A45E00671616 /* CustomUILabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomUILabel.swift; sourceTree = "<group>"; };
 		A8D1545F264681BC0084B0A5 /* UIBarLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIBarLabel.swift; sourceTree = "<group>"; };
 		C5639E77202F7FE34B2C6D22 /* Pods-MOSAIC LIFE.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MOSAIC LIFE.release.xcconfig"; path = "Target Support Files/Pods-MOSAIC LIFE/Pods-MOSAIC LIFE.release.xcconfig"; sourceTree = "<group>"; };
@@ -85,6 +88,7 @@
 				A842C608260888C60001750A /* Assets.xcassets */,
 				A842C60A260888C60001750A /* LaunchScreen.storyboard */,
 				A842C60D260888C60001750A /* Info.plist */,
+				A84439B126ABD1EA00C8A7AA /* MOSAIC_LIFE.xcdatamodeld */,
 			);
 			path = "MOSAIC LIFE";
 			sourceTree = "<group>";
@@ -226,6 +230,7 @@
 				A842C604260888C10001750A /* ViewController.swift in Sources */,
 				A842C600260888C10001750A /* AppDelegate.swift in Sources */,
 				A842C602260888C10001750A /* SceneDelegate.swift in Sources */,
+				A84439B426ABD1EA00C8A7AA /* MOSAIC_LIFE.xcdatamodeld in Sources */,
 				A8D15460264681BC0084B0A5 /* UIBarLabel.swift in Sources */,
 				A842C6182608CA0B0001750A /* MissionViewController.swift in Sources */,
 			);
@@ -433,6 +438,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		A84439B126ABD1EA00C8A7AA /* MOSAIC_LIFE.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				A84439B226ABD1EA00C8A7AA /* MOSAIC_LIFE.xcdatamodel */,
+				A84439B326ABD1EA00C8A7AA /* MissionListModel.xcdatamodel */,
+			);
+			currentVersion = A84439B226ABD1EA00C8A7AA /* MOSAIC_LIFE.xcdatamodel */;
+			path = MOSAIC_LIFE.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = A842C5F4260888C10001750A /* Project object */;
 }

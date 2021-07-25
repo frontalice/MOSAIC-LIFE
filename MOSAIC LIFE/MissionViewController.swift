@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDataSource,UIPickerViewDelegate, UIPickerViewDataSource {
     
@@ -270,12 +271,16 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 //        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
         navigationItem.rightBarButtonItems = [editButtonItem, addButton]
         
+        // CoreDataから読み込み
+        
+        
         // リスト情報をmissionMemoryから読み込み
         let categoryCount: Int = userDefaults.integer(forKey: "categoryCount")
         for i in 0..<categoryCount {
             if userDefaults.object(forKey: "missionMemory\(String(i))") != nil {
+                
                 if let dicList = userDefaults.object(forKey: "missionMemory\(String(i))") as? [[String: Any]] {
-    //                print(dicList)
+                    
                     // 初期化したmissionListsにはmissionLists[1]以降が無いので都度追加
                     if i > 0 {
                         self.missionLists.append((missionList: [], listName: ""))
@@ -287,11 +292,30 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                         self.missionLists[i].listName = "UnnamedCategory\(String(i))"
                     }
                 }
+                
             } else {
                 //保存データが無い場合、アラート表示
                 showAlert("データの読み込みに失敗しています")
             }
         }
+        
+        // CoreData移行プロセス
+//        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+//        let context = appDelegate.persistentContainer.viewContext
+//        for i in 0..<missionLists.count {
+//            for j in 0..<missionLists[i].missionList.count {
+//                let newItem = MissionData(context: context)
+//                newItem.missionName = missionLists[i].missionList[j].mission
+//                newItem.pt = Int16(missionLists[i].missionList[j].pt)
+//                newItem.multiplier = 1.0
+//                newItem.category = missionLists[i].listName
+//                do {
+//                    try context.save()
+//                } catch {
+//                    print(error.localizedDescription)
+//                }
+//            }
+//        }
         
         // バフ: userDefaultsから取得
         if let dicList = userDefaults.object(forKey: "buffData") as? [[String : Any]] {
@@ -330,13 +354,18 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        
-    }
+//    override func viewWillAppear(_ animated: Bool) {
+//        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+//        do {
+//            let fetchRequest: NSFetchRequest<MissionData> = MissionData.fetchRequest()
+//            let dataArray = try context.fetch(fetchRequest)
+//            print(dataArray[0].value(forKey: "missionName"))
+//            print(dataArray[0].value(forKey: "pt"))
+//            print(dataArray[0].value(forKey: "category"))
+//        } catch {
+//            print("ないよ")
+//        }
+//    }
     
     func makeRawData() {
         //バフされたptの初期化: グラスモード
