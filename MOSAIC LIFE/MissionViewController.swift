@@ -54,7 +54,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     override func setEditing(_ editing: Bool, animated: Bool) {
         super .setEditing(editing, animated: true)
         self.tableView.setEditing(editing, animated: true)
-        disableGlassMode()
     }
     
     //削除できるセル: 全部
@@ -86,19 +85,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         missionLists[destinationIndexPath.section].missionList.insert(targetCell, at: destinationIndexPath.row)
         saveTableViewData()
     }
-    
-    //セル移動の制限: とりあえず同セクション間での移動のみに留める
-//    func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
-//        if sourceIndexPath.section == proposedDestinationIndexPath.section {
-//            return proposedDestinationIndexPath
-//        }
-//        return sourceIndexPath
-//    }
-    /*
-     セルを動かしてるとき、
-     移動中セルのセクションとその真下のセルのセクションが一致している場合は空きセルの場所がproposedDestinationIndexPathになり、
-     セクションが一致してない場合は空きセルの場所は変化しない（sourceIndexPathのまま）、的な？
-    */
     
     // isEditing = false: セルをタップでポイント獲得
     // isEditing = true:  既存セルの編集
@@ -141,7 +127,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             tableView.deselectRow(at: indexPath, animated: true)
         } else {
             // 編集モード時にタップしたらミッション名やポイントを変更できるようにする
-//            print("editing now")
             let alert = UIAlertController(title: "Todoの編集", message: "ToDo名と報酬ptの編集", preferredStyle: .alert)
             alert.addTextField { (mission: UITextField) -> Void in
                 mission.placeholder = "Mission Name"
@@ -216,7 +201,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             let convertedList: [[String: Any]] = missionLists[i].missionList.map{["mission": $0.mission, "pt": $0.pt]}
             userDefaults.set(convertedList, forKey: "missionMemory\(String(i))")
             userDefaults.set(missionLists[i].listName, forKey: "categoryName\(String(i))")
-//            print(userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix("missionMemory") })
         }
         userDefaults.set(missionLists.count, forKey: "categoryCount")
         
@@ -357,13 +341,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         let setting = UserDefaults.standard
         let presentPoint: Int = setting.integer(forKey: "storePoints")
         pointLabel.title = "\(String(presentPoint)) pt"
-        
-        //グラスモード -> false
-        glassModeIsEnabled = false
-        glassButton.tintColor = .systemGray
-        
-        //グラスボタンの当たり判定
-        glassFrame.width = 40
 
     }
     
@@ -381,17 +358,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 //    }
     
     func makeRawData() {
-        //バフされたptの初期化: グラスモード
-        if glassModeIsEnabled {
-            for i in 0..<missionLists.count {
-                if missionLists[i].listName.contains("Coding") {
-                    for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int("\(Decimal(missionLists[i].missionList[n].pt) / 1.1)")!
-                    }
-                }
-            }
-        }
-        
         //バフされたptの初期化: Settingバフ
         if isBuffApplicated {
             let buffedCategory = buffArray.map{$0.category}
@@ -407,17 +373,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     }
     
     func enchantData() {
-        //グラスモード
-        if glassModeIsEnabled {
-            for i in 0..<missionLists.count {
-                if missionLists[i].listName.contains("Coding") {
-                    for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int("\(Decimal(missionLists[i].missionList[n].pt) * 1.1)")!
-                    }
-                }
-            }
-        }
-        
         //Settingバフ
         if isBuffApplicated {
             let buffedCategory = buffArray.map{$0.category}
@@ -434,15 +389,12 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 
     //MARK: - StoryBoard
     @IBOutlet weak var pointLabel: UIBarLabel!
-    @IBOutlet weak var glassFrame: UIBarButtonItem!
-    @IBOutlet weak var glassButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     
     //MARK: - UI部品
     //ミッションを追加: alertで入力
     @objc func plusButtonTapped(_ sender: UIBarButtonItem){
         
-        disableGlassMode()
         let alert = UIAlertController(title: "Todoの追加", message: "ToDo名と報酬ptを入力", preferredStyle: .alert)
         
         alert.addTextField { (mission: UITextField) -> Void in
@@ -513,50 +465,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             self.missionLists.removeLast()
         })
         present(alert, animated: true, completion: nil)
-    }
-    
-    var glassModeIsEnabled : Bool = false
-    
-    func disableGlassMode(){
-        if glassModeIsEnabled == true {
-            glassModeIsEnabled = false
-            glassButton.tintColor = .systemGray
-            for i in 0..<missionLists.count {
-                if missionLists[i].listName.contains("Coding") {
-                    for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int("\(Decimal(missionLists[i].missionList[n].pt) / 1.1)")!
-                    }
-                    tableView.reloadData()
-                }
-            }
-        }
-    }
-    
-    @IBAction func glassButtonTapped(_ sender: Any) {
-        glassModeIsEnabled = !glassModeIsEnabled
-//        print("glass button tapped, glassmode is \(glassModeIsEnabled)")
-        
-        if glassModeIsEnabled == true {
-            glassButton.tintColor = .systemBlue
-            for i in 0..<missionLists.count {
-                if missionLists[i].listName.contains("Coding") {
-                    for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int("\(Decimal(missionLists[i].missionList[n].pt) * 1.1)")!
-                    }
-                    tableView.reloadData()
-                }
-            }
-        } else {
-            glassButton.tintColor = .systemGray
-            for i in 0..<missionLists.count {
-                if missionLists[i].listName.contains("Coding") {
-                    for n in 0..<missionLists[i].missionList.count {
-                        missionLists[i].missionList[n].pt = Int("\(Decimal(missionLists[i].missionList[n].pt) / 1.1)")!
-                    }
-                    tableView.reloadData()
-                }
-            }
-        }
     }
     
     //　アラート: エラー表示

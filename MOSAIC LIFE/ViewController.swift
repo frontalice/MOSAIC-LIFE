@@ -6,6 +6,7 @@
 //
 
 import UIKit
+typealias NSMAtString = NSMutableAttributedString
 
 class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     
@@ -15,11 +16,16 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     var usedPointArray = Array<(item:String, pt:Int)>()
     var ptPerHourArray = Array<Int>()
     
-    var attrText = NSMutableAttributedString()
+    var attrText = NSMAtString()
     
     var buffArray: [(buffName: String, magnification: String, category: String, date: Date)] = Array<(String, String, String, Date)>()
     
     var pptMultiplier = 1.05
+    
+    var currentSpt = 0
+    var sptRank = 0
+    var sptCount = 0
+    var sptRankData = [ 0:1.0, 1:1.2, 2:1.5, 3:2.0, 4:3.0, 5:4.0, 6:5.0 ]
     
     //MARK: - ライフサイクル
     
@@ -31,50 +37,42 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         //レイアウト読み込み
         pointLabel.layer.borderWidth = 2.0
         pointLabel.layer.borderColor = UIColor.black.cgColor
-        buffLog.layer.borderWidth = 1.0
-        buffLog.layer.borderColor = UIColor.black.cgColor
         debugLog.layer.borderWidth = 1.0
         debugLog.layer.borderColor = UIColor.black.cgColor
         
         self.debugLog.delegate = self
         
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillChangeFrameNotification, object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil
+        )
         
         let now = Date()
         let format = DateFormatter()
         var dateBorder: Date
         
-        settings.register(defaults: ["poolingPoint" : 0, "pptMultiplier" : 1.05])
+        settings.register(defaults: [
+            "poolingPoint" : 0,
+            "pptMultiplier" : 1.05,
+            "spt" : 0,
+            "sptRank" : 0,
+            "sptCount" : 0,
+            "subscPrice" : 0
+        ])
         pptMultiplier = settings.double(forKey: "pptMultiplier")
         pptMultiplierLabel.text = String(pptMultiplier)
+        currentSpt = settings.integer(forKey: "spt")
+        sptRank = settings.integer(forKey: "sptRank")
+        sptCount = settings.integer(forKey: "sptCount")
         
         // dateBorderの取得、nilなら明日4時に設定
         if let savedDateBorder: Date = settings.object(forKey: "DateBorder") as! Date? {
-//            print(savedDateBorder)
             dateBorder = savedDateBorder
         } else {
             dateBorder = reloadDateBorder()
         }
-        
-        // テスト用
-//        settings.removeObject(forKey: "buffData")
-        
-        // バフログ: userDefaultsから取得
-        if let dicList = settings.object(forKey: "buffData") as? [[String : Any]] {
-            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! String, category: $0["category"] as! String, date: $0["date"] as! Date)}
-        }
-        
-        // 期限超過のバフ消去
-        for buffIndex in (0..<self.buffArray.count).reversed() {
-            if buffArray[buffIndex].date < now {
-                buffArray.remove(at: buffIndex)
-                print("消去後: \(buffArray)")
-            }
-        }
-        
-        // テスト用
-        // dateBorder = Date(timeInterval: -60*60*24, since: dateBorder)
         
         // 日付変更線に関する処理
         if now > dateBorder {
@@ -84,24 +82,6 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             // dateBorderを日本時間で取得
             format.dateFormat = DateFormatter.dateFormat(fromTemplate: "MMMdHm", options: 0, locale: Locale(identifier: "ja_JP"))
             
-            // プールpt処理
-//            if settings.integer(forKey: "storePoints") >= 1000 {
-//                let pt = settings.integer(forKey: "storePoints") // 前日の獲得pt
-//                let ppt = pt - 1000 // ppt移行分
-//                settings.set(pt - ppt, forKey: "storePoints")
-//                let pptYesterday = settings.integer(forKey: "poolingPoint")
-//                var pptToday = Int(Double(ppt + pptYesterday) * pptMultiplier)
-//                if pptToday > 100000 { pptToday = 100000 }
-//                settings.set(pptToday, forKey: "poolingPoint")
-//                self.attrText.insert(NSMutableAttributedString(string: "ppt変換: (\(pptYesterday) + \(ppt)) * \(self.pptMultiplier) → \(pptToday)pts\n"), at: attrText.length)
-//            } else {
-//                let pptYesterday = settings.integer(forKey: "poolingPoint")
-//                var pptToday = Int(Double(pptYesterday) * pptMultiplier)
-//                if pptToday > 100000 { pptToday = 100000 }
-//                settings.set(pptToday, forKey: "poolingPoint")
-//                self.attrText.insert(NSMutableAttributedString(string: "ppt変換: \(pptYesterday) * \(self.pptMultiplier) → \(pptToday)pts\n"), at: attrText.length)
-//            }
-            
             // プールpt処理（1000pt以下対応版）
             let pt = settings.integer(forKey: "storePoints") // 前日の獲得pt
             var ppt = pt - 1000
@@ -109,15 +89,32 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             settings.set(pt - ppt, forKey: "storePoints")
             let pptYesterday = settings.integer(forKey: "poolingPoint")
             var pptToday = Int(Double(ppt + pptYesterday) * pptMultiplier)
-            if pptToday > 100000 { pptToday = 100000 }
+            if pptToday > 25000 { pptToday = 25000 }
             settings.set(pptToday, forKey: "poolingPoint")
-            self.attrText.insert(NSMutableAttributedString(string: "ppt変換: (\(pptYesterday) + \(ppt)) * \(self.pptMultiplier) → \(pptToday)pts\n"), at: attrText.length)
+            self.attrText.insert(NSMAtString(
+                string: "ppt変換: (\(pptYesterday) + \(ppt)) * \(self.pptMultiplier) → \(pptToday)pts\n"),
+                at: attrText.length
+            )
+            pptMultiplier = 1.05
+            pptMultiplierLabel.text = "1.05"
+            settings.set(pptMultiplier, forKey: "pptMultiplier")
             
+            // spt関連の処理
+            sptCount -= 1
+            if sptCount == 0 && sptRank > 0 {
+                sptRank -= 1
+                sptCount = 2
+            }
+            resetSpt()
+            settings.set(settings.integer(forKey: "spt") + settings.integer(forKey: "subscPrice"), forKey: "spt")
+            settings.set(sptCount, forKey: "sptCount")
+            currentSpt = settings.integer(forKey: "spt")
             
             // テキストログ初期化
-            self.attrText.insert(NSMutableAttributedString(string:
+            self.attrText.insert(NSMAtString(string:
                 "日付が更新されました。\n" +
                 "[\(catchTime())] 現在: \(String(roadPoints()))pts\n" +
+                "補正レベル: Lv\(sptRank) / 残り\(sptCount)日\n" +
                 "----------------------------------------------------\n")
             , at:attrText.length)
             
@@ -134,11 +131,11 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             // テキストログ取得
             if let archivedLog = settings.object(forKey: "DebugLog") {
                 let unarchivedText = try! NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(archivedLog as! Data) as! NSAttributedString
-                self.attrText = unarchivedText.mutableCopy() as! NSMutableAttributedString
+                self.attrText = unarchivedText.mutableCopy() as! NSMAtString
                 debugLog.attributedText = attrText
             // テキストログ取得失敗時
             } else {
-                self.attrText = NSMutableAttributedString(string: "読み込みに失敗しました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
+                self.attrText = NSMAtString(string: "読み込みに失敗しました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
                 debugLog.attributedText = attrText
             }
         }
@@ -147,15 +144,16 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         pointLabel.text = String(roadPoints())
         poolingPointLabel.text = "\(String(settings.integer(forKey: "poolingPoint"))) pts POOLing"
         
+        //spt読み込み
+        currentSptLabel.text = String(currentSpt)
+        addingSptLabel.text = ""
+        currencyButton.setTitle("x\(settings.double(forKey: "moneyMultiplier"))", for: .normal)
+        
         //バフログ書き込み
-        writeBuffLog()
+//        writeBuffLog()
         
         // 日付変更線更新
         settings.set(dateBorder, forKey: "DateBorder")
-        
-        // BuffData更新
-        let convertedList: [[String: Any]] = buffArray.map{["name": $0.buffName, "mag": $0.magnification, "category": $0.category, "date": $0.date]}
-        UserDefaults.standard.set(convertedList, forKey: "buffData")
     }
     
     func reloadDateBorder() -> Date {
@@ -174,12 +172,6 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         dateFormatter.setLocalizedDateFormatFromTemplate("H")
         let hour: Int = Int(dateFormatter.string(from: now))!
         
-//        dateFormatter.setLocalizedDateFormatFromTemplate("m")
-//        let minute: Int = Int(dateFormatter.string(from: now))!
-//
-//        dateFormatter.setLocalizedDateFormatFromTemplate("s")
-//        let second: Int = Int(dateFormatter.string(from: now))!
-        
         if hour >= 4 {
             day += 1
         }
@@ -193,14 +185,16 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         
         navigationController?.navigationBar.barTintColor = UIColor.secondarySystemBackground
         
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillChangeFrameNotification, object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil
+        )
         
         //残りptを更新
         pointLabel.text = String(roadPoints())
         poolingPointLabel.text = "\(String(settings.integer(forKey: "poolingPoint"))) pts POOLing"
-        
-//        writeDebugLog()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -219,19 +213,13 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         var presentHour = Int(ptHour)!
         if presentHour <= 3 {
             switch presentHour {
-            case 0:
-                presentHour = 24
-            case 1:
-                presentHour = 25
-            case 2:
-                presentHour = 26
-            case 3:
-                presentHour = 27
-            default:
-                break
+                case 0: presentHour = 24
+                case 1: presentHour = 25
+                case 2: presentHour = 26
+                case 3: presentHour = 27
+                default: break
             }
         }
-        print("presentHour: \(presentHour)")
         
         var lastHour: Int!
         if settings.object(forKey: "timeForDivideLine") != nil {
@@ -240,22 +228,15 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             lastHour = presentHour
         }
         
-        print("memoryHour: \(lastHour!)")
         if lastHour <= 3 {
             switch lastHour {
-            case 0:
-                lastHour = 24
-            case 1:
-                lastHour = 25
-            case 2:
-                lastHour = 26
-            case 3:
-                lastHour = 27
-            default:
-                break
+                case 0: lastHour = 24
+                case 1: lastHour = 25
+                case 2: lastHour = 26
+                case 3: lastHour = 27
+                default: break
             }
         }
-        print("lastHour: \(lastHour!)\n-------------------")
         
         if let savedPphArray = settings.array(forKey: "ptPerHourArray") as? [Int] {
             ptPerHourArray = savedPphArray
@@ -268,17 +249,20 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
                 ptPerHourArray.removeLast()
                 let hourSum = ptPerHourArray.reduce(0, {$0+$1})
                 ptPerHourArray.removeAll()
-                self.attrText.insert(NSAttributedString(string: "---------↑\(lastHour!)-\(presentHour)時合計: \(hourSum)pt---------\n"), at: attrText.length)
+                self.attrText.insert(NSAttributedString(
+                    string: "---------↑\(lastHour!)-\(presentHour)時合計: \(hourSum)pt---------\n"),
+                    at: attrText.length
+                )
                 ptPerHourArray.append(lastPt)
                 settings.set(ptPerHourArray, forKey: "ptPerHourArray")
             }
             for i in 0..<gotPointArray.count {
-                let gotPtText = NSMutableAttributedString(string: "[\(timeString)] +\(gotPointArray[i].pt)pt: \(gotPointArray[i].item)\n")
+                let gotPtText = NSMAtString(string: "[\(timeString)] +\(gotPointArray[i].pt)pt: \(gotPointArray[i].item)\n")
                 gotPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.blue, range: NSMakeRange(0, gotPtText.length))
                 self.attrText.insert(gotPtText, at: attrText.length)
             }
             gotPointArray.removeAll()
-            self.attrText.insert(NSMutableAttributedString(string: "[\(timeString)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
+            self.attrText.insert(NSMAtString(string: "[\(timeString)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
         }
         
@@ -294,16 +278,14 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
                 settings.set(ptPerHourArray, forKey: "ptPerHourArray")
             }
             for i in 0..<usedPointArray.count {
-                let consumedPtText = NSMutableAttributedString(string: "[\(timeString)] -\(usedPointArray[i].pt)pt: \(usedPointArray[i].item)\n")
+                let consumedPtText = NSMAtString(string: "[\(timeString)] -\(usedPointArray[i].pt)pt: \(usedPointArray[i].item)\n")
                 consumedPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.red, range: NSMakeRange(0, consumedPtText.length))
                 self.attrText.insert(consumedPtText, at: attrText.length)
             }
             usedPointArray.removeAll()
-            self.attrText.insert(NSMutableAttributedString(string: "[\(timeString)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
+            self.attrText.insert(NSMAtString(string: "[\(timeString)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
         }
-        
-//        print("\(debugLog.attributedText!)\n------------------------------------")
         
         settings.set(presentHour, forKey: "timeForDivideLine")
         
@@ -311,42 +293,25 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
         settings.set(archivedText, forKey: "DebugLog")
     }
-    
-    func writeBuffLog(){
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "M/d H:mm", options: 0, locale: Locale(identifier: "ja_JP"))
-        for buffIndex in 0..<buffArray.count {
-            buffLog.text += "[\(dateFormatter.string(from: buffArray[buffIndex].date))] \"\(buffArray[buffIndex].buffName)\"が<\(buffArray[buffIndex].category)>で発動中(x\(buffArray[buffIndex].magnification))\n"
-        }
-    }
 
     //MARK: - StoryBoard
     
     @IBOutlet weak var pointLabel: UITextField!
     @IBOutlet weak var poolingPointLabel: UILabel!
     @IBOutlet weak var debugLog: UITextView!
-    @IBOutlet weak var buffLog: UITextView!
     @IBOutlet weak var pptMultiplierLabel: UITextField!
+    @IBOutlet weak var currencyButton: UIButton!
+    @IBOutlet weak var currentSptLabel: UITextField!
+    @IBOutlet weak var addingSptLabel: UITextField!
     
     @IBAction func whenPointLabelEdited(_ sender: UITextField) {
         if pointLabel.text?.isEmpty != true {
             settings.set(pointLabel.text!, forKey: "storePoints")
-            self.attrText.insert(NSMutableAttributedString(string: "[\(catchTime())] 現在: \(pointLabel.text!)pts\n"), at: attrText.length)
+            self.attrText.insert(NSMAtString(string: "[\(catchTime())] 現在: \(pointLabel.text!)pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
         } else {
             pointLabel.text = String(roadPoints())
         }
-    }
-    @IBAction func clearButtonTapped(_ sender: Any) {
-        let alert : UIAlertController = UIAlertController(title: nil, message: "初期化してもいい？", preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction!) -> Void in
-            self.settings.removeObject(forKey: "buffData")
-            self.buffArray = Array<(String, String, String, Date)>()
-            self.buffLog.text.removeAll()
-        }
-        alert.addAction(okAction)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        present(alert, animated: true, completion: nil)
     }
     
     @IBAction func whenPptMultiplierLabelEdited(_ sender: Any) {
@@ -356,6 +321,94 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         }
     }
     
+    @IBAction func currentSptEdited(_ sender: Any) {
+        if let text = currentSptLabel.text {
+            currentSpt = Int(text)!
+            
+            self.attrText.insert(NSAttributedString(string: "現在Spt: \(currentSpt)spt\n"), at: attrText.length)
+            let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
+            settings.set(archivedText, forKey: "DebugLog")
+            debugLog.attributedText = attrText
+            
+            settings.set(currentSpt, forKey: "spt")
+            judgeSptRank()
+        }
+    }
+    
+    @IBAction func addingSptEdited(_ sender: Any) {
+        if let text = addingSptLabel.text {
+            let consumePtText : Int
+            if let text_db = Double(text) {
+                consumePtText = Int(text_db * settings.double(forKey: "moneyMultiplier"))
+            } else {
+                print("しかし　何も起こらなかった")
+                addingSptLabel.text = ""
+                return
+            }
+            //ログに消費予定のptを表示
+            self.attrText.insert(NSAttributedString(
+                string: "消費予定pt: \(consumePtText)pt\n"),
+                at: attrText.length
+            )
+            
+            // spt更新（ランクも変われば更新）
+            currentSpt += Int(text)!
+            self.attrText.insert(NSAttributedString(string: "現在Spt: \(currentSpt)spt (+\(text))\n"), at: attrText.length)
+            print(currentSpt)
+            settings.set(currentSpt, forKey: "spt")
+            judgeSptRank()
+            
+            let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
+            settings.set(archivedText, forKey: "DebugLog")
+            debugLog.attributedText = attrText
+            
+            //各ラベルに反映
+            currentSptLabel.text = String(currentSpt)
+            addingSptLabel.text = ""
+        }
+    }
+    @IBAction func currencyButtonTapped(_ sender: Any) {
+        let alert = UIAlertController(title: "SBSC/Rank/Count", message: nil, preferredStyle: .alert)
+        
+        alert.addTextField { (tf: UITextField) -> Void in
+            tf.placeholder = "Subscription_Price"
+        }
+        alert.textFields![0].text = String(self.settings.integer(forKey: "subscPrice"))
+        
+        alert.addTextField { (tf: UITextField) -> Void in
+            tf.placeholder = "Spt_Rank"
+        }
+        alert.textFields![1].text = String(self.settings.integer(forKey: "sptRank"))
+        
+        alert.addTextField { (tf: UITextField) -> Void in
+            tf.placeholder = "Rank_count"
+        }
+        alert.textFields![2].text = String(self.settings.integer(forKey: "sptCount"))
+        
+        let alertAction = UIAlertAction(title: "OK", style: .default) {(action: UIAlertAction) -> Void in
+            if let text0 = alert.textFields![0].text {
+                if let num = Int(text0) {
+                    self.settings.set(num, forKey: "subscPrice")
+                }
+            }
+            if let text1 = alert.textFields![1].text {
+                if let num = Int(text1) {
+                    self.settings.set(num, forKey: "sptRank")
+                    self.settings.set(self.sptRankData[num], forKey: "moneyMultiplier")
+                    print(self.sptRankData[num]!)
+                    self.currencyButton.setTitle("x\(self.settings.double(forKey: "moneyMultiplier"))", for: .normal)
+                }
+            }
+            if let text2 = alert.textFields![2].text {
+                if let num = Int(text2) {
+                    self.settings.set(num, forKey: "sptCount")
+                }
+            }
+        }
+        alert.addAction(alertAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
     
     //MARK: - func
     // 現在ptを読み込み
@@ -380,7 +433,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     }
     
     @objc func keyboardWillShow(notification: NSNotification) {
-        if debugLog.isFirstResponder {
+        if debugLog.isFirstResponder || currentSptLabel.isFirstResponder || addingSptLabel.isFirstResponder {
             if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
                 if self.view.frame.origin.y == 0 {
                     self.view.frame.origin.y -= keyboardSize.height
@@ -393,11 +446,67 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     }
         
     @objc func keyboardWillHide() {
-        if debugLog.isFirstResponder {
+        if debugLog.isFirstResponder || currentSptLabel.isFirstResponder || addingSptLabel.isFirstResponder {
             if self.view.frame.origin.y != 0 {
                 self.view.frame.origin.y = 0
             }
         }
+    }
+    
+    //sptRankが変動したか確認(保存もする)
+    func judgeSptRank() -> Void {
+        
+        var tempRank = 0
+        var moneyMultiplier : Double = 1.0
+        
+        if      currentSpt >= 12000 { tempRank = 6; moneyMultiplier = 5.0}
+        else if currentSpt >= 10000 { tempRank = 5; moneyMultiplier = 4.0}
+        else if currentSpt >= 7000  { tempRank = 4; moneyMultiplier = 3.0}
+        else if currentSpt >= 5000  { tempRank = 3; moneyMultiplier = 2.0}
+        else if currentSpt >= 3000  { tempRank = 2; moneyMultiplier = 1.5}
+        else if currentSpt >= 2000  { tempRank = 1; moneyMultiplier = 1.2}
+        else                        { tempRank = 0; moneyMultiplier = 1.0}
+        
+        if tempRank != sptRank {
+            //　ログに履歴表示
+            self.attrText.insert(NSAttributedString(string: "補正レベルが変動しました: \(sptRank) -> \(tempRank) [x\(moneyMultiplier)]\n"), at: attrText.length)
+            let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
+            settings.set(archivedText, forKey: "DebugLog")
+            debugLog.attributedText = attrText
+            
+            // ランク変動
+            sptRank = tempRank
+            
+            // カウント更新
+            if (sptRank <= 1) { sptCount = 1 } else { sptCount = 2 }
+            
+            //倍率更新
+            currencyButton.setTitle("x\(moneyMultiplier)", for: .normal)
+            settings.set(moneyMultiplier, forKey: "moneyMultiplier")
+            
+            //データ保存
+            settings.set(sptRank, forKey: "sptRank")
+            settings.set(sptCount, forKey: "sptCount")
+            print(sptCount)
+            print(sptRank)
+        }
+    }
+    
+    func resetSpt() -> Void {
+        var moneyMultiplier : Double = 1.0
+        switch sptRank {
+            case 6: currentSpt = 12000; moneyMultiplier = 5.0;
+            case 5: currentSpt = 10000; moneyMultiplier = 4.0;
+            case 4: currentSpt = 7000;  moneyMultiplier = 3.0;
+            case 3: currentSpt = 5000;  moneyMultiplier = 2.0;
+            case 2: currentSpt = 3000;  moneyMultiplier = 1.5;
+            case 1: currentSpt = 0;     moneyMultiplier = 1.2;
+            case 0: currentSpt = 0;     moneyMultiplier = 1.0;
+            default:currentSpt = 0;
+        }
+        currencyButton.setTitle("x\(moneyMultiplier)", for: .normal)
+        settings.set(currentSpt, forKey: "spt")
+        settings.set(moneyMultiplier, forKey: "moneyMultiplier")
     }
 }
 
@@ -405,7 +514,7 @@ extension ViewController {
     
     func textViewDidEndEditing(_ textView: UITextView) {
         if textView == debugLog {
-            attrText = debugLog.attributedText!.mutableCopy() as! NSMutableAttributedString
+            attrText = debugLog.attributedText!.mutableCopy() as! NSMAtString
             let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
             settings.set(archivedText, forKey: "DebugLog")
         }

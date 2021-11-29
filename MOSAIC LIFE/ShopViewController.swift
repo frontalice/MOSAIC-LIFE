@@ -53,20 +53,14 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         cell.textLabel?.text = shopLists[indexPath.section].shopList[indexPath.row].item
         cell.detailTextLabel?.text = String(shopLists[indexPath.section].shopList[indexPath.row].pt)
         
+        // 不足時グレーアウト
         if shopLists[indexPath.section].shopList[indexPath.row].pt > userDefaults.integer(forKey: "storePoints") {
             cell.backgroundColor = UIColor.systemGray
         }
         
+        // ppt消費可能時水色
         if userDefaults.integer(forKey: "poolingPoint") >= shopLists[indexPath.section].shopList[indexPath.row].pt && shopLists[indexPath.section].shopList[indexPath.row].pt > userDefaults.integer(forKey: "storePoints") {
             cell.backgroundColor = UIColor {_ in return #colorLiteral(red: 0.3529411765, green: 1, blue: 0.9803921569, alpha: 1)}
-        }
-        
-//        if userDefaults.integer(forKey: "storePoints") >= shopLists[indexPath.section].shopList[indexPath.row].pt {
-//            cell.backgroundColor = UIColor.white
-//        }
-        
-        if shopLists[indexPath.section].shopList[indexPath.row].item.range(of: "\u{1F512}") != nil {
-            cell.backgroundColor = UIColor.systemGray
         }
         
         return cell
@@ -76,7 +70,6 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     override func setEditing(_ editing: Bool, animated: Bool) {
         super .setEditing(editing, animated: true)
         self.tableView.setEditing(editing, animated: true)
-        disableGlassMode()
         tableView.reloadData()
     }
     
@@ -121,19 +114,6 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         }
     }
     
-//    //セル移動の制限: とりあえず同セクション間での移動のみに留める
-//    func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
-//        if sourceIndexPath.section == proposedDestinationIndexPath.section {
-//            return proposedDestinationIndexPath
-//        }
-//        return sourceIndexPath
-//    }
-    /*
-     セルを動かしてるとき、
-     移動中セルのセクションとその真下のセルのセクションが一致している場合は空きセルの場所がproposedDestinationIndexPathになり、
-     セクションが一致してない場合は空きセルの場所は変化しない（sourceIndexPathのまま）、的な？
-    */
-    
     // isEditing = false: セルをタップでポイント消費
     // isEditing = true:  既存セルの編集
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -142,7 +122,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             //userDefaultsに残ptのデータを保存
             let setting = UserDefaults.standard
             var presentPoint: Int = setting.integer(forKey: "storePoints")
-            let consumeItem: String = shopLists[indexPath.section].shopList[indexPath.row].item
+            var consumeItem: String = shopLists[indexPath.section].shopList[indexPath.row].item
             let consumePoint: Int = shopLists[indexPath.section].shopList[indexPath.row].pt
             
             if consumePoint > presentPoint {
@@ -159,6 +139,22 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
                         self.pointLabel.title = "\(String(presentPoint)) pt / \(String(self.poolingPoint)) ppt"
                         self.tableView.reloadData()
                         self.tableView.deselectRow(at: indexPath, animated: true)
+                        
+                        // ログ更新（ppt消費時用）
+                        let nvc = self.navigationController!
+                        let vc = nvc.viewControllers[0] as! ViewController
+                        consumeItem = "[ppt消費]" + consumeItem
+                        vc.usedPointArray.append((consumeItem, consumePoint))
+                        
+                        // 切り取り線向け処理
+                        if let savedPphArray = self.userDefaults.array(forKey: "ptPerHourArray") as? [Int] {
+                            vc.ptPerHourArray = savedPphArray
+                        }
+                        vc.ptPerHourArray.append(consumePoint)
+                        self.userDefaults.set(vc.ptPerHourArray, forKey: "ptPerHourArray")
+                        vc.writeDebugLog()
+                        
+                        tableView.deselectRow(at: indexPath, animated: true)
                     }
                     alert.addAction(alertAction)
                     alert.addAction(UIAlertAction(title: "Cancel", style: .cancel){
@@ -337,6 +333,13 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         
         navigationController?.navigationBar.barTintColor = UIColor.systemGreen
         
+        // iOS15対応（UINavigationBarの背景色が消える）
+//        let appearance = UINavigationBarAppearance()
+//        appearance.configureWithOpaqueBackground()
+//        appearance.backgroundColor = UIColor.systemBackground
+//        navigationController?.navigationBar.standardAppearance = appearance
+//        navigationController?.navigationBar.scrollEdgeAppearance = navigationController?.navigationBar.standardAppearance
+        
         // +とEditボタン追加
         let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
 //        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
@@ -394,32 +397,15 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             self.poolingPoint = setting.integer(forKey: "poolingPoint")
         }
         pointLabel.title = "\(String(presentPoint)) pt / \(String(self.poolingPoint)) ppt"
-        
-        //グラスモード -> false
-        glassModeIsEnabled = false
-        glassButton.tintColor = .systemGray
-        
-        //グラスボタンの当たり判定
-        glassFrame.width = 40
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        moneyMultiplier = userDefaults.double(forKey: "moneyMultiplier")
-        moneyMutiplierButton.title = "x\(moneyMultiplier)"
+        moneyMutiplierButton.title = "x\(userDefaults.double(forKey: "moneyMultiplier"))"
     }
-//
-//    override func viewWillDisappear(_ animated: Bool) {
-//
-//    }
     
     // MARK: - バフ関連
     
     func makeRawData() {
-        
-        //バフされたptの初期化: グラスモード
-        if glassModeIsEnabled {
-            disableGlassMode()
-        }
         
         //バフされたptの初期化: Settingバフ
         if isBuffApplicated {
@@ -454,26 +440,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         return num
     }
     
-    func disableGlassMode(){
-        if glassModeIsEnabled == true {
-            glassModeIsEnabled = false
-            for i in 0..<shopLists.count {
-                if shopLists[i].listName.contains("Gaming") {
-                    for n in 0..<shopLists[i].shopList.count {
-                        if shopLists[i].shopList[n].item.range(of: "\u{1F4B0}") == nil {
-                            shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / 0.9)")!
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
     func enchantData() {
-        //グラスモード
-        if glassModeIsEnabled {
-            applyGlassMode()
-        }
         
         //Settingバフ
         if isBuffApplicated {
@@ -509,23 +476,9 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         return num
     }
     
-    func applyGlassMode() {
-        for i in 0..<shopLists.count {
-            if shopLists[i].listName.contains("Gaming") {
-                for n in 0..<shopLists[i].shopList.count {
-                    if shopLists[i].shopList[n].item.range(of: "\u{1F4B0}") == nil {
-                        shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) * 0.9)")!
-                    }
-                }
-            }
-        }
-    }
-    
     // MARK: - StoryBoard
 
     @IBOutlet weak var pointLabel: UIBarLabel!
-    @IBOutlet weak var glassFrame: UIBarButtonItem!
-    @IBOutlet weak var glassButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var moneyMutiplierButton: UIBarButtonItem!
     
@@ -533,7 +486,6 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     
     //ミッションを追加: alertで入力
     @objc func plusButtonTapped(_ sender: UIBarButtonItem){
-        disableGlassMode()
         tableView.reloadData()
         let alert = UIAlertController(title: "Itemの追加", message: "Item名と消費ptを入力", preferredStyle: .alert)
         alert.addTextField { (item: UITextField) -> Void in
@@ -597,31 +549,6 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             self.shopLists.removeLast()
         })
         present(alert, animated: true, completion: nil)
-    }
-    
-    var glassModeIsEnabled : Bool = false
-    
-    @IBAction func glassButtonTapped(_ sender: Any) {
-        glassModeIsEnabled = !glassModeIsEnabled
-//        print("glass button tapped, glassmode is \(glassModeIsEnabled)")
-        
-        if glassModeIsEnabled == true {
-            glassButton.tintColor = .systemBlue
-            applyGlassMode()
-            tableView.reloadData()
-        } else {
-            glassButton.tintColor = .systemGray
-            for i in 0..<shopLists.count {
-                if shopLists[i].listName.contains("Gaming") {
-                    for n in 0..<shopLists[i].shopList.count {
-                        if shopLists[i].shopList[n].item.range(of: "\u{1F4B0}") == nil {
-                            shopLists[i].shopList[n].pt = Int("\(Decimal(shopLists[i].shopList[n].pt) / 0.9)")!
-                        }
-                    }
-                    tableView.reloadData()
-                }
-            }
-        }
     }
     
     @IBAction func moneyMultiplierButtonTapped(_ sender: Any) {
