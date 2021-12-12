@@ -62,7 +62,8 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             "subscPrice" : 0
         ])
         pptMultiplier = settings.double(forKey: "pptMultiplier")
-        pptMultiplierLabel.text = String(pptMultiplier)
+//        pptMultiplierLabel.text = String(pptMultiplier)
+        pptMultiplierButton.setTitle(String(pptMultiplier), for: .normal)
         currentSpt = settings.integer(forKey: "spt")
         sptRank = settings.integer(forKey: "sptRank")
         sptCount = settings.integer(forKey: "sptCount")
@@ -96,7 +97,8 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
                 at: attrText.length
             )
             pptMultiplier = 1.05
-            pptMultiplierLabel.text = "1.05"
+//            pptMultiplierLabel.text = "1.05"
+            pptMultiplierButton.setTitle("1.05", for: .normal)
             settings.set(pptMultiplier, forKey: "pptMultiplier")
             
             // spt関連の処理
@@ -195,6 +197,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         //残りptを更新
         pointLabel.text = String(roadPoints())
         poolingPointLabel.text = "\(String(settings.integer(forKey: "poolingPoint"))) pts POOLing"
+        pptMultiplierButton.setTitle(String(settings.double(forKey: "pptMultiplier")), for: .normal)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -299,7 +302,8 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     @IBOutlet weak var pointLabel: UITextField!
     @IBOutlet weak var poolingPointLabel: UILabel!
     @IBOutlet weak var debugLog: UITextView!
-    @IBOutlet weak var pptMultiplierLabel: UITextField!
+//    @IBOutlet weak var pptMultiplierLabel: UITextField!
+    @IBOutlet weak var pptMultiplierButton: UIButton!
     @IBOutlet weak var currencyButton: UIButton!
     @IBOutlet weak var currentSptLabel: UITextField!
     @IBOutlet weak var addingSptLabel: UITextField!
@@ -314,12 +318,12 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         }
     }
     
-    @IBAction func whenPptMultiplierLabelEdited(_ sender: Any) {
-        if let text = pptMultiplierLabel.text {
-            pptMultiplier = Double(text)!
-            settings.set(Double(text), forKey: "pptMultiplier")
-        }
-    }
+//    @IBAction func whenPptMultiplierLabelEdited(_ sender: Any) {
+//        if let text = pptMultiplierLabel.text {
+//            pptMultiplier = Double(text)!
+//            settings.set(Double(text), forKey: "pptMultiplier")
+//        }
+//    }
     
     @IBAction func currentSptEdited(_ sender: Any) {
         if let text = currentSptLabel.text {

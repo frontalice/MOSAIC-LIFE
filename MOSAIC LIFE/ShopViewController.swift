@@ -384,6 +384,10 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
             }
         }
         
+        if #available(iOS 15, *) {
+            tableView.sectionHeaderTopPadding = 0.0
+        }
+        
         // TableViewを表示
         tableView.reloadData()
         
