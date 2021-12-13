@@ -59,7 +59,8 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             "spt" : 0,
             "sptRank" : 0,
             "sptCount" : 0,
-            "subscPrice" : 0
+            "subscPrice" : 0,
+            "isDayChanged" : false
         ])
         pptMultiplier = settings.double(forKey: "pptMultiplier")
 //        pptMultiplierLabel.text = String(pptMultiplier)
@@ -128,6 +129,8 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             // pphArray初期化
             ptPerHourArray.removeAll()
             settings.set(ptPerHourArray, forKey: "ptPerHourArray")
+            
+            settings.set(true, forKey: "isDayChanged")
                 
         } else {
             // テキストログ取得

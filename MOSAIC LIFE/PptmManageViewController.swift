@@ -398,6 +398,19 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
         passiveList = loadtuple("passiveList")
         depassiveList = loadtuple("depassiveList")
         
+        let isDayChanged = UserDefaults.standard.bool(forKey: "isDayChanged")
+        if isDayChanged {
+            for i in 1..<passiveList.count {
+                passiveList[i].state = false
+            }
+            for i in 0..<depassiveList.count {
+                depassiveList[i].state = false
+            }
+            savetuple(passiveList, "passiveList")
+            savetuple(depassiveList, "depassiveList")
+            UserDefaults.standard.set(false, forKey: "isDayChanged")
+        }
+        
         passiveTable.reloadData()
         depassiveTable.reloadData()
         
