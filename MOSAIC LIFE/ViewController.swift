@@ -35,8 +35,18 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         // Do any additional setup after loading the view.
         
         //レイアウト読み込み
+        
+//        let barheight : CGFloat = 1
+//        self.navigationController?.navigationBar.frame.size.height = barheight
+        
         pointLabel.layer.borderWidth = 2.0
-        pointLabel.layer.borderColor = UIColor.black.cgColor
+        pointLabel.layer.borderColor = UIColor {_ in return #colorLiteral(red: 1, green: 0.4718433711, blue: 0, alpha: 1)}.cgColor
+        pointLabel.layer.cornerRadius = 20
+        pointLabel.layer.masksToBounds = true
+        
+        shopButton.layer.cornerRadius = 20
+        missionButton.layer.cornerRadius = 20
+        
         debugLog.layer.borderWidth = 1.0
         debugLog.layer.borderColor = UIColor.black.cgColor
         
@@ -304,6 +314,8 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     
     @IBOutlet weak var pointLabel: UITextField!
     @IBOutlet weak var poolingPointLabel: UILabel!
+    @IBOutlet weak var shopButton: UIButton!
+    @IBOutlet weak var missionButton: UIButton!
     @IBOutlet weak var debugLog: UITextView!
 //    @IBOutlet weak var pptMultiplierLabel: UITextField!
     @IBOutlet weak var pptMultiplierButton: UIButton!
@@ -472,6 +484,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         else if currentSpt >= 5000  { tempRank = 3; moneyMultiplier = 2.0}
         else if currentSpt >= 3000  { tempRank = 2; moneyMultiplier = 1.5}
         else if currentSpt >= 2000  { tempRank = 1; moneyMultiplier = 1.2}
+        else if sptRank == 1        { tempRank = 1; moneyMultiplier = 1.2}
         else                        { tempRank = 0; moneyMultiplier = 1.0}
         
         if tempRank != sptRank {

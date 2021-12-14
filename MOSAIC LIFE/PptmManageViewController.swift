@@ -317,6 +317,7 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
                 self.passiveList.append((nameStr!,valDbl,false))
                 self.savetuple(self.passiveList, "passiveList")
                 self.passiveTable.reloadData()
+                self.reSelectCells()
             } else {
                 self.showAlert("不正な値です")
             }
@@ -328,6 +329,7 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
                 self.depassiveList.append((nameStr!,valDbl,false))
                 self.savetuple(self.depassiveList, "depassiveList")
                 self.depassiveTable.reloadData()
+                self.reSelectCells()
             } else {
                 self.showAlert("不正な値です")
             }
@@ -341,6 +343,19 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
     @IBAction func whenPptmTFEdited(_ sender: Any) {
         if let m = Double(pptmTF.text!) {
             UserDefaults.standard.set(m, forKey: "pptMultiplier")
+        }
+    }
+    
+    func reSelectCells() {
+        for i in 0..<passiveList.count {
+            if passiveList[i].state {
+                passiveTable.selectRow(at: IndexPath(row: i, section: 0), animated: false, scrollPosition: .none)
+            }
+        }
+        for i in 0..<depassiveList.count {
+            if depassiveList[i].state {
+                depassiveTable.selectRow(at: IndexPath(row: i, section: 0), animated: false, scrollPosition: .none)
+            }
         }
     }
     
@@ -424,15 +439,6 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
         pptMultiplier = UserDefaults.standard.double(forKey: "pptMultiplier")
         pptmTF.text = String(pptMultiplier)
         
-        for i in 0..<passiveList.count {
-            if passiveList[i].state {
-                passiveTable.selectRow(at: IndexPath(row: i, section: 0), animated: false, scrollPosition: .none)
-            }
-        }
-        for i in 0..<depassiveList.count {
-            if depassiveList[i].state {
-                depassiveTable.selectRow(at: IndexPath(row: i, section: 0), animated: false, scrollPosition: .none)
-            }
-        }
+        reSelectCells()
     }
 }
