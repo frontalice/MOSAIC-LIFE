@@ -6,7 +6,7 @@
 //
 
 import UIKit
-typealias NSMAtString = NSMutableAttributedString
+typealias NSMAttrStr = NSMutableAttributedString
 
 class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     
@@ -16,7 +16,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     var usedPointArray = Array<(item:String, pt:Int)>()
     var ptPerHourArray = Array<Int>()
     
-    var attrText = NSMAtString()
+    var attrText = NSMAttrStr()
     
     var buffArray: [(buffName: String, magnification: String, category: String, date: Date)] = Array<(String, String, String, Date)>()
     
@@ -26,6 +26,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     var sptRank = 0
     var sptCount = 0
     var sptRankData = [ 0:1.0, 1:1.2, 2:1.5, 3:2.0, 4:3.0, 5:4.0, 6:5.0 ]
+    var overCounter = 0
     
     //MARK: - ライフサイクル
     
@@ -36,8 +37,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         
         //レイアウト読み込み
         
-//        let barheight : CGFloat = 1
-//        self.navigationController?.navigationBar.frame.size.height = barheight
+        self.navigationController?.setNavigationBarHidden(true, animated: false)
         
         pointLabel.layer.borderWidth = 2.0
         pointLabel.layer.borderColor = UIColor {_ in return #colorLiteral(red: 1, green: 0.4718433711, blue: 0, alpha: 1)}.cgColor
@@ -103,7 +103,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             var pptToday = Int(Double(ppt + pptYesterday) * pptMultiplier)
             if pptToday > 25000 { pptToday = 25000 }
             settings.set(pptToday, forKey: "poolingPoint")
-            self.attrText.insert(NSMAtString(
+            self.attrText.insert(NSMAttrStr(
                 string: "ppt変換: (\(pptYesterday) + \(ppt)) * \(self.pptMultiplier) → \(pptToday)pts\n"),
                 at: attrText.length
             )
@@ -124,7 +124,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             currentSpt = settings.integer(forKey: "spt")
             
             // テキストログ初期化
-            self.attrText.insert(NSMAtString(string:
+            self.attrText.insert(NSMAttrStr(string:
                 "日付が更新されました。\n" +
                 "[\(catchTime())] 現在: \(String(roadPoints()))pts\n" +
                 "補正レベル: Lv\(sptRank) / 残り\(sptCount)日\n" +
@@ -146,11 +146,11 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             // テキストログ取得
             if let archivedLog = settings.object(forKey: "DebugLog") {
                 let unarchivedText = try! NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(archivedLog as! Data) as! NSAttributedString
-                self.attrText = unarchivedText.mutableCopy() as! NSMAtString
+                self.attrText = unarchivedText.mutableCopy() as! NSMAttrStr
                 debugLog.attributedText = attrText
             // テキストログ取得失敗時
             } else {
-                self.attrText = NSMAtString(string: "読み込みに失敗しました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
+                self.attrText = NSMAttrStr(string: "読み込みに失敗しました。\n[\(catchTime())] 現在: \(String(roadPoints()))pts\n")
                 debugLog.attributedText = attrText
             }
         }
@@ -198,6 +198,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
         navigationController?.navigationBar.barTintColor = UIColor.secondarySystemBackground
         
         NotificationCenter.default.addObserver(
@@ -273,12 +274,12 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
                 settings.set(ptPerHourArray, forKey: "ptPerHourArray")
             }
             for i in 0..<gotPointArray.count {
-                let gotPtText = NSMAtString(string: "[\(timeString)] +\(gotPointArray[i].pt)pt: \(gotPointArray[i].item)\n")
+                let gotPtText = NSMAttrStr(string: "[\(timeString)] +\(gotPointArray[i].pt)pt: \(gotPointArray[i].item)\n")
                 gotPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.blue, range: NSMakeRange(0, gotPtText.length))
                 self.attrText.insert(gotPtText, at: attrText.length)
             }
             gotPointArray.removeAll()
-            self.attrText.insert(NSMAtString(string: "[\(timeString)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
+            self.attrText.insert(NSMAttrStr(string: "[\(timeString)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
         }
         
@@ -294,12 +295,12 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
                 settings.set(ptPerHourArray, forKey: "ptPerHourArray")
             }
             for i in 0..<usedPointArray.count {
-                let consumedPtText = NSMAtString(string: "[\(timeString)] -\(usedPointArray[i].pt)pt: \(usedPointArray[i].item)\n")
+                let consumedPtText = NSMAttrStr(string: "[\(timeString)] -\(usedPointArray[i].pt)pt: \(usedPointArray[i].item)\n")
                 consumedPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.red, range: NSMakeRange(0, consumedPtText.length))
                 self.attrText.insert(consumedPtText, at: attrText.length)
             }
             usedPointArray.removeAll()
-            self.attrText.insert(NSMAtString(string: "[\(timeString)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
+            self.attrText.insert(NSMAttrStr(string: "[\(timeString)] 現在: \(String(roadPoints()))pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
         }
         
@@ -326,7 +327,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     @IBAction func whenPointLabelEdited(_ sender: UITextField) {
         if pointLabel.text?.isEmpty != true {
             settings.set(pointLabel.text!, forKey: "storePoints")
-            self.attrText.insert(NSMAtString(string: "[\(catchTime())] 現在: \(pointLabel.text!)pts\n"), at: attrText.length)
+            self.attrText.insert(NSMAttrStr(string: "[\(catchTime())] 現在: \(pointLabel.text!)pts\n"), at: attrText.length)
             debugLog.attributedText = self.attrText
         } else {
             pointLabel.text = String(roadPoints())
@@ -360,7 +361,6 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             if let text_db = Double(text) {
                 consumePtText = Int(text_db * settings.double(forKey: "moneyMultiplier"))
             } else {
-                print("しかし　何も起こらなかった")
                 addingSptLabel.text = ""
                 return
             }
@@ -478,7 +478,10 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         var tempRank = 0
         var moneyMultiplier : Double = 1.0
         
-        if      currentSpt >= 12000 { tempRank = 6; moneyMultiplier = 5.0}
+        if      currentSpt >= 12000 {
+            overCounter = (currentSpt - 12000) / 3000
+            tempRank = 6; moneyMultiplier = 5.0
+        }
         else if currentSpt >= 10000 { tempRank = 5; moneyMultiplier = 4.0}
         else if currentSpt >= 7000  { tempRank = 4; moneyMultiplier = 3.0}
         else if currentSpt >= 5000  { tempRank = 3; moneyMultiplier = 2.0}
@@ -498,7 +501,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             sptRank = tempRank
             
             // カウント更新
-            if (sptRank <= 1) { sptCount = 1 } else { sptCount = 2 }
+            if (sptRank <= 1) { sptCount = 1 } else { sptCount = 2 + overCounter}
             
             //倍率更新
             currencyButton.setTitle("x\(moneyMultiplier)", for: .normal)
@@ -515,7 +518,12 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     func resetSpt() -> Void {
         var moneyMultiplier : Double = 1.0
         switch sptRank {
-            case 6: currentSpt = 12000; moneyMultiplier = 5.0;
+            case 6:
+                if sptCount > 2 {
+                    currentSpt = 12000 +
+                                 ( (sptCount-2)/2 + 1) * 3000
+                }
+                moneyMultiplier = 5.0;
             case 5: currentSpt = 10000; moneyMultiplier = 4.0;
             case 4: currentSpt = 7000;  moneyMultiplier = 3.0;
             case 3: currentSpt = 5000;  moneyMultiplier = 2.0;
@@ -534,7 +542,7 @@ extension ViewController {
     
     func textViewDidEndEditing(_ textView: UITextView) {
         if textView == debugLog {
-            attrText = debugLog.attributedText!.mutableCopy() as! NSMAtString
+            attrText = debugLog.attributedText!.mutableCopy() as! NSMAttrStr
             let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
             settings.set(archivedText, forKey: "DebugLog")
         }

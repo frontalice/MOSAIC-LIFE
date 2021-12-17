@@ -436,6 +436,9 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
+        
         pptMultiplier = UserDefaults.standard.double(forKey: "pptMultiplier")
         pptmTF.text = String(pptMultiplier)
         

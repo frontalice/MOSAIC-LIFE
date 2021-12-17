@@ -404,6 +404,7 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
         moneyMutiplierButton.title = "x\(userDefaults.double(forKey: "moneyMultiplier"))"
     }
     

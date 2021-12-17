@@ -248,15 +248,12 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 
         // Do any additional setup after loading the view.
         
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
         navigationController?.navigationBar.barTintColor = UIColor.systemTeal
         
         // +とEditボタン追加
         let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
-//        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
         navigationItem.rightBarButtonItems = [editButtonItem, addButton]
-        
-        // CoreDataから読み込み
-        
         
         // リスト情報をmissionMemoryから読み込み
         let categoryCount: Int = userDefaults.integer(forKey: "categoryCount")
@@ -283,53 +280,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             }
         }
         
-        // CoreData全消去
-//        let contxt = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-//
-//        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "MissionData")
-//        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-//
-//        do {
-//            try contxt.execute(deleteRequest)
-//            try contxt.save()
-//        } catch  {
-//            print("Failed to Delete MissionData.")
-//        }
-        
-        // CoreData移行プロセス
-//        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-//        let context = appDelegate.persistentContainer.viewContext
-//        for i in 0..<missionLists.count {
-//            for j in 0..<missionLists[i].missionList.count {
-//                let newItem = MissionData(context: context)
-//                newItem.missionName = missionLists[i].missionList[j].mission
-//                newItem.pt = Int16(missionLists[i].missionList[j].pt)
-//                newItem.multiplier = 1.0
-//                newItem.category = missionLists[i].listName
-//                do {
-//                    try context.save()
-//                } catch {
-//                    print(error.localizedDescription)
-//                }
-//            }
-//        }
-        
-        // バフ: userDefaultsから取得
-        if let dicList = userDefaults.object(forKey: "buffData") as? [[String : Any]] {
-            self.buffArray = dicList.map{(buffName: $0["name"] as! String, magnification: $0["mag"] as! String, category: $0["category"] as! String, date: $0["date"] as! Date)}
-            if !buffArray.isEmpty {
-                isBuffApplicated = true
-                let buffedCategory = buffArray.map{$0.category}
-                for i in 0..<missionLists.count {
-                    if buffedCategory.contains(missionLists[i].listName) {
-                        let index = buffedCategory.firstIndex(of: missionLists[i].listName)
-//                        let intMag = buffArray[index!].magnification * 100
-                        let buffedMissionList = missionLists[i].missionList.map{($0.mission, Int("\(Decimal($0.pt) * (Decimal(string: self.buffArray[index!].magnification)! * 10) / 10)")!)}
-                        missionLists[i].missionList = buffedMissionList
-                    }
-                }
-            }
-        }
         
         if #available(iOS 15, *) {
             tableView.sectionHeaderTopPadding = 0.0
