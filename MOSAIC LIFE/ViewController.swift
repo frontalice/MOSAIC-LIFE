@@ -70,7 +70,8 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             "sptRank" : 0,
             "sptCount" : 0,
             "subscPrice" : 0,
-            "isDayChanged" : false
+            "isDayChanged" : false,
+            "migrateCount" : 2
         ])
         pptMultiplier = settings.double(forKey: "pptMultiplier")
 //        pptMultiplierLabel.text = String(pptMultiplier)

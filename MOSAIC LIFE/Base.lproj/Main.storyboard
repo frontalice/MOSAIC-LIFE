@@ -48,7 +48,7 @@
                                 </constraints>
                             </stackView>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="UHi-9K-fMm">
-                                <rect key="frame" x="20" y="309.5" width="335" height="192"/>
+                                <rect key="frame" x="20" y="309.5" width="335" height="347.5"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="192" id="ckF-H5-ZD4"/>

@@ -340,6 +340,25 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
         present(alert, animated: true, completion: nil)
     }
     
+    @objc func migrateButtonTapped(_ sender: UIBarButtonItem){
+        let migrateCount = UserDefaults.standard.integer(forKey: "migrateCount")
+        if migrateCount > 0 {
+            var ppt = UserDefaults.standard.integer(forKey: "poolingPoint")
+            let alert = UIAlertController(title: nil, message: "ppt処理を実行しますか？\n（今日はあと\(migrateCount)回実行出来ます）\n\(ppt)ppt * \(pptMultiplier) = \(Int(Double(ppt) * self.pptMultiplier))ppt", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default){ (action: UIAlertAction) -> Void in
+                ppt = Int(Double(ppt) * self.pptMultiplier)
+                UserDefaults.standard.set(ppt, forKey: "poolingPoint")
+                UserDefaults.standard.set(migrateCount-1, forKey: "migrateCount")
+                self.showAlert("ppt処理が完了しました。")
+            }
+            alert.addAction(okAction)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            present(alert, animated: true, completion: nil)
+        } else {
+            showAlert("今日はもう実行出来ません")
+        }
+    }
+    
     @IBAction func whenPptmTFEdited(_ sender: Any) {
         if let m = Double(pptmTF.text!) {
             UserDefaults.standard.set(m, forKey: "pptMultiplier")
@@ -392,8 +411,9 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
         
         pptmTF.delegate = self
         
-        let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
-        navigationItem.rightBarButtonItems = [editButtonItem, addButton]
+        let addButton = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
+        let migrateButton = UIBarButtonItem.init(barButtonSystemItem: .refresh, target: self, action: #selector(self.migrateButtonTapped(_:)))
+        navigationItem.rightBarButtonItems = [editButtonItem, addButton, migrateButton]
         
         if #available(iOS 15, *) {
             passiveTable.sectionHeaderTopPadding = 0.0
