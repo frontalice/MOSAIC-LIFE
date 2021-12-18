@@ -63,6 +63,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         
         self.navigationController?.setNavigationBarHidden(true, animated: false)
         
+        ptlabelStack.layer.cornerRadius = 18
         pointLabel.layer.borderWidth = 2.0
         pointLabel.layer.borderColor = UIColor {_ in return #colorLiteral(red: 1, green: 0.4718433711, blue: 0, alpha: 1)}.cgColor
         pointLabel.layer.cornerRadius = 20
@@ -362,6 +363,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     //MARK: - StoryBoard / Parts
     
     //ptParts
+    @IBOutlet weak var ptlabelStack: UIStackView!
     @IBOutlet weak var pointLabel: UITextField!
     //pptParts
     @IBOutlet weak var poolingPointLabel: UILabel!

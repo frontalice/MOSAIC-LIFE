@@ -320,8 +320,9 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     
     override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(false, animated: true)
-        syncBarAppearance(.systemTeal)
         modeSwitcher.selectedSegmentIndex = userDefaults.integer(forKey: "modeSwitcher")
+        syncBarAppearance(modeColors[modeSwitcher.selectedSegmentIndex])
+        missionToolbar.barTintColor = modeColors[modeSwitcher.selectedSegmentIndex]
     }
     
     func makeRawData() {
