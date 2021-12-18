@@ -48,7 +48,7 @@
                                 </constraints>
                             </stackView>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="UHi-9K-fMm">
-                                <rect key="frame" x="20" y="309.5" width="335" height="347.5"/>
+                                <rect key="frame" x="20" y="309.5" width="335" height="0.0"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="192" id="ckF-H5-ZD4"/>
@@ -57,6 +57,9 @@
                                 <color key="textColor" systemColor="labelColor"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                <connections>
+                                    <outlet property="delegate" destination="BYZ-38-t0r" id="n9b-2x-uSP"/>
+                                </connections>
                             </textView>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="2Dr-YM-qfr" userLabel="Mode Button Stack">
                                 <rect key="frame" x="20" y="186" width="335" height="70"/>
@@ -182,6 +185,48 @@
                                     <constraint firstAttribute="bottom" secondItem="q7k-xU-nxO" secondAttribute="bottom" id="wuD-40-zuM"/>
                                 </constraints>
                             </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="tsL-My-rRV" userLabel="Effect Stack">
+                                <rect key="frame" x="20" y="319.5" width="335" height="80"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oNV-h6-DKc">
+                                        <rect key="frame" x="0.0" y="0.0" width="108.5" height="80"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="Button">
+                                            <backgroundConfiguration key="background" cornerRadius="20"/>
+                                            <color key="baseBackgroundColor" systemColor="systemRedColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="angerBtnTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="l0b-DN-HHw"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Eqa-zV-F8V">
+                                        <rect key="frame" x="113.5" y="0.0" width="108" height="80"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="Button">
+                                            <backgroundConfiguration key="background" cornerRadius="20"/>
+                                            <color key="baseBackgroundColor" systemColor="systemBlueColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="exploreBtnTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="GtI-YS-4UM"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c5d-yo-Fh3">
+                                        <rect key="frame" x="226.5" y="0.0" width="108.5" height="80"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="Button">
+                                            <backgroundConfiguration key="background" cornerRadius="20"/>
+                                            <color key="baseBackgroundColor" systemColor="systemGreenColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="heartBtnTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="eAa-QR-VLn"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" red="0.68627450980000004" green="0.59372283219999999" blue="0.87058823529999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="80" id="Ax8-uU-ncg"/>
+                                </constraints>
+                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
@@ -193,24 +238,30 @@
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UHi-9K-fMm" secondAttribute="trailing" constant="20" id="FSV-Ge-KQC"/>
                             <constraint firstItem="UHi-9K-fMm" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="JQa-84-FLT"/>
                             <constraint firstItem="2Dr-YM-qfr" firstAttribute="top" secondItem="THW-TW-1b9" secondAttribute="bottom" constant="8" id="M4q-c3-O0V"/>
+                            <constraint firstItem="tsL-My-rRV" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="Mwe-gI-PcI"/>
                             <constraint firstItem="UIs-3y-65h" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="Pxm-Ds-0aA"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="UHi-9K-fMm" secondAttribute="bottom" constant="10" id="QIm-YV-MLU"/>
                             <constraint firstItem="UIs-3y-65h" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="TgA-Fg-IrU"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UIs-3y-65h" secondAttribute="trailing" constant="20" id="VF4-Jk-4PP"/>
                             <constraint firstItem="2Dr-YM-qfr" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="cQG-3R-KUb"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="tsL-My-rRV" secondAttribute="bottom" constant="10" id="cl6-WO-LzJ"/>
                             <constraint firstItem="Fcp-ao-Xex" firstAttribute="top" secondItem="2Dr-YM-qfr" secondAttribute="bottom" constant="8.5" id="eBN-bb-6fX"/>
                             <constraint firstItem="Fcp-ao-Xex" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="ehT-eo-2Gc"/>
+                            <constraint firstItem="tsL-My-rRV" firstAttribute="top" secondItem="UHi-9K-fMm" secondAttribute="bottom" constant="10" id="iKI-3x-Zmm"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="2Dr-YM-qfr" secondAttribute="trailing" constant="20" id="kOS-41-pLy"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Fcp-ao-Xex" secondAttribute="trailing" constant="20" id="tJy-i4-hES"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="tsL-My-rRV" secondAttribute="trailing" constant="20" id="v6V-mH-EPo"/>
                             <constraint firstItem="UHi-9K-fMm" firstAttribute="top" secondItem="Fcp-ao-Xex" secondAttribute="bottom" constant="10" id="xKd-cI-uAf"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="MOSAIC LIFE" id="lwn-8F-Bez"/>
                     <connections>
+                        <outlet property="ExploreEffectBtn" destination="Eqa-zV-F8V" id="chh-bf-uDE"/>
                         <outlet property="addingSptLabel" destination="q7k-xU-nxO" id="Tjo-zL-QbM"/>
+                        <outlet property="angerEffectBtn" destination="oNV-h6-DKc" id="DNU-0L-to3"/>
                         <outlet property="currencyButton" destination="6aV-md-R0a" id="XDZ-hA-UWn"/>
                         <outlet property="currentSptLabel" destination="luZ-vZ-Q2r" id="f5Z-6k-B7V"/>
                         <outlet property="debugLog" destination="UHi-9K-fMm" id="atT-GK-j4K"/>
+                        <outlet property="heartEffectBtn" destination="c5d-yo-Fh3" id="erC-AV-95B"/>
                         <outlet property="missionButton" destination="MHJ-db-YHW" id="9WW-KL-brQ"/>
                         <outlet property="pointLabel" destination="1Jd-O3-gnV" id="mD7-3e-QvX"/>
                         <outlet property="poolingPointLabel" destination="fvE-YA-53I" id="Wau-ca-WUC"/>
@@ -647,6 +698,9 @@
         </systemColor>
         <systemColor name="systemOrangeColor">
             <color red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemRedColor">
+            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemTealColor">
             <color red="0.18823529411764706" green="0.69019607843137254" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

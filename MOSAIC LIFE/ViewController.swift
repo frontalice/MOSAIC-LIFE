@@ -27,6 +27,12 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     var sptCount = 0
     var sptRankData = [ 0:1.0, 1:1.2, 2:1.5, 3:2.0, 4:3.0, 5:4.0, 6:5.0 ]
     var overCounter = 0
+    let effectStrs = [
+        ["\u{1F534}", "\u{2B55}", "\u{1F53B}"],
+        ["\u{1F4A0}", "\u{1F537}", "\u{1F539}"],
+        ["\u{1F49A}", "\u{2733}", "\u{2747}"]
+    ]
+    var effectsCount = [[0,0,0],[0,0,0],[0,0,0]]
     
     //MARK: - ライフサイクル
     
@@ -34,6 +40,24 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
+        settings.register(defaults: [
+            "poolingPoint" : 0,
+            "pptMultiplier" : 1.05,
+            "spt" : 0,
+            "sptRank" : 0,
+            "sptCount" : 0,
+            "subscPrice" : 0,
+            "isDayChanged" : false,
+            "migrateCount" : 2,
+            "effectsCount" : [[0,0,0],[0,0,0],[0,0,0]]
+        ])
+        pptMultiplier = settings.double(forKey: "pptMultiplier")
+//        pptMultiplierLabel.text = String(pptMultiplier)
+        pptMultiplierButton.setTitle(String(pptMultiplier), for: .normal)
+        currentSpt = settings.integer(forKey: "spt")
+        sptRank = settings.integer(forKey: "sptRank")
+        sptCount = settings.integer(forKey: "sptCount")
         
         //レイアウト読み込み
         
@@ -50,7 +74,19 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         debugLog.layer.borderWidth = 1.0
         debugLog.layer.borderColor = UIColor.black.cgColor
         
-        self.debugLog.delegate = self
+//        self.debugLog.delegate = self -> Storyboardで設定済み
+        let effectBtns = [angerEffectBtn, exploreEffectBtn, heartEffectBtn]
+        effectsCount = (settings.object(forKey: "effectsCount") as? [[Int]])!
+        for i in 0 ... 2 {
+            effectBtns[i]?.titleLabel?.numberOfLines = 3
+            effectBtns[i]?.titleLabel?.textAlignment = .center
+            var text = ""
+            for j in 0 ..< 2 {
+                text += "\(effectStrs[i][j])x \(effectsCount[i][j])\n"
+            }
+            text += "\(effectStrs[i][2])x \(effectsCount[i][2])"
+            effectBtns[i]?.setTitle(text, for: .normal)
+        }
         
         NotificationCenter.default.addObserver(
             self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillChangeFrameNotification, object: nil
@@ -62,23 +98,6 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         let now = Date()
         let format = DateFormatter()
         var dateBorder: Date
-        
-        settings.register(defaults: [
-            "poolingPoint" : 0,
-            "pptMultiplier" : 1.05,
-            "spt" : 0,
-            "sptRank" : 0,
-            "sptCount" : 0,
-            "subscPrice" : 0,
-            "isDayChanged" : false,
-            "migrateCount" : 2
-        ])
-        pptMultiplier = settings.double(forKey: "pptMultiplier")
-//        pptMultiplierLabel.text = String(pptMultiplier)
-        pptMultiplierButton.setTitle(String(pptMultiplier), for: .normal)
-        currentSpt = settings.integer(forKey: "spt")
-        sptRank = settings.integer(forKey: "sptRank")
-        sptCount = settings.integer(forKey: "sptCount")
         
         // dateBorderの取得、nilなら明日4時に設定
         if let savedDateBorder: Date = settings.object(forKey: "DateBorder") as! Date? {
@@ -210,6 +229,8 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil
         )
         
+        self.debugLog.scrollRangeToVisible(NSRange(location: self.debugLog.attributedText.length-1, length: 1))
+        
         //残りptを更新
         pointLabel.text = String(roadPoints())
         poolingPointLabel.text = "\(String(settings.integer(forKey: "poolingPoint"))) pts POOLing"
@@ -313,18 +334,22 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         settings.set(archivedText, forKey: "DebugLog")
     }
 
-    //MARK: - StoryBoard
+    //MARK: - StoryBoard / Parts
     
     @IBOutlet weak var pointLabel: UITextField!
     @IBOutlet weak var poolingPointLabel: UILabel!
     @IBOutlet weak var shopButton: UIButton!
     @IBOutlet weak var missionButton: UIButton!
     @IBOutlet weak var debugLog: UITextView!
-//    @IBOutlet weak var pptMultiplierLabel: UITextField!
     @IBOutlet weak var pptMultiplierButton: UIButton!
     @IBOutlet weak var currencyButton: UIButton!
     @IBOutlet weak var currentSptLabel: UITextField!
     @IBOutlet weak var addingSptLabel: UITextField!
+    @IBOutlet weak var angerEffectBtn: UIButton!
+    @IBOutlet weak var exploreEffectBtn: UIButton!
+    @IBOutlet weak var heartEffectBtn: UIButton!
+    
+    //MARK: - StoryBoard / Functions
     
     @IBAction func whenPointLabelEdited(_ sender: UITextField) {
         if pointLabel.text?.isEmpty != true {
@@ -335,13 +360,6 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             pointLabel.text = String(roadPoints())
         }
     }
-    
-//    @IBAction func whenPptMultiplierLabelEdited(_ sender: Any) {
-//        if let text = pptMultiplierLabel.text {
-//            pptMultiplier = Double(text)!
-//            settings.set(Double(text), forKey: "pptMultiplier")
-//        }
-//    }
     
     @IBAction func currentSptEdited(_ sender: Any) {
         if let text = currentSptLabel.text {
@@ -431,6 +449,49 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         present(alert, animated: true, completion: nil)
     }
     
+    @IBAction func angerBtnTapped(_ sender: Any) {
+        effectBtnTapped(0, angerEffectBtn, "\u{1F534}")
+    }
+    @IBAction func exploreBtnTapped(_ sender: Any) {
+        effectBtnTapped(1, exploreEffectBtn, "\u{1F537}")
+    }
+    @IBAction func heartBtnTapped(_ sender: Any) {
+        effectBtnTapped(2, heartEffectBtn, "\u{1F49A}")
+    }
+    func effectBtnTapped(_ num: Int, _ btn: UIButton, _ effect: String){
+        let alert = UIAlertController(title: effect, message: nil, preferredStyle: .alert)
+        for i in 0...2 {
+            alert.addTextField { (tf: UITextField) -> Void in
+                tf.text = String(self.effectsCount[num][i])
+            }
+        }
+        let alertAction = UIAlertAction(title: "OK", style: .default) { (action: UIAlertAction) -> Void in
+            var counts = [0,0,0]
+            for i in 0...2 {
+                if let count : Int = Int(alert.textFields![i].text!) {
+                    counts[i] = count
+                }
+            }
+            self.effectsCount[num] = counts
+            self.settings.set(self.effectsCount, forKey: "effectsCount")
+            var text = ""
+            for j in 0 ..< 2 {
+                text += "\(self.effectStrs[num][j])x \(self.effectsCount[num][j])\n"
+            }
+            text += "\(self.effectStrs[num][2])x \(self.effectsCount[num][2])"
+            btn.setTitle(text, for: .normal)
+            let log = NSMAttrStr(string: "Effect: \(self.effectStrs[num][0])x\(counts[0]) \(self.effectStrs[num][1])x\(counts[1]) \(self.effectStrs[num][2])x\(counts[2])\n", attributes: [.foregroundColor : UIColor.blue])
+            self.attrText.insert(log, at: self.attrText.length)
+            self.debugLog.attributedText = self.attrText
+            let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: self.debugLog.attributedText!, requiringSecureCoding: false)
+            self.settings.set(archivedText, forKey: "DebugLog")
+            self.debugLog.scrollRangeToVisible(NSRange(location: self.debugLog.attributedText.length-1, length: 1))
+        }
+        alert.addAction(alertAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
     //MARK: - func
     // 現在ptを読み込み
     func roadPoints() -> Int {
@@ -498,6 +559,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             let archivedText = try! NSKeyedArchiver.archivedData(withRootObject: debugLog.attributedText!, requiringSecureCoding: false)
             settings.set(archivedText, forKey: "DebugLog")
             debugLog.attributedText = attrText
+            self.debugLog.scrollRangeToVisible(NSRange(location: self.debugLog.attributedText.length-1, length: 1))
             
             // ランク変動
             sptRank = tempRank
