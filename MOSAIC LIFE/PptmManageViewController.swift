@@ -142,7 +142,7 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
                         self.savetuple(self.passiveList, "passiveList")
                         self.passiveTable.reloadData()
                     } else {
-                        self.showAlert("不正な値です")
+                        self.showMessage("不正な値です")
                     }
                 }
                 alert.addAction(alertAction)
@@ -185,7 +185,7 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
                         self.savetuple(self.depassiveList, "depassiveList")
                         self.depassiveTable.reloadData()
                     } else {
-                        self.showAlert("不正な値です")
+                        self.showMessage("不正な値です")
                     }
                 }
                 alert.addAction(alertAction)
@@ -237,7 +237,7 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
                         self.savetuple(self.passiveList, "passiveList")
                         self.passiveTable.reloadData()
                     } else {
-                        self.showAlert("不正な値です")
+                        self.showMessage("不正な値です")
                     }
                 }
                 alert.addAction(alertAction)
@@ -274,7 +274,7 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
                         self.savetuple(self.depassiveList, "depassiveList")
                         self.depassiveTable.reloadData()
                     } else {
-                        self.showAlert("不正な値です")
+                        self.showMessage("不正な値です")
                     }
                 }
                 alert.addAction(alertAction)
@@ -319,7 +319,7 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
                 self.passiveTable.reloadData()
                 self.reSelectCells()
             } else {
-                self.showAlert("不正な値です")
+                self.showMessage("不正な値です")
             }
         }
         let addDePassive = UIAlertAction(title: "デパッシブへ", style: .default) { (action: UIAlertAction) -> Void in
@@ -331,7 +331,7 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
                 self.depassiveTable.reloadData()
                 self.reSelectCells()
             } else {
-                self.showAlert("不正な値です")
+                self.showMessage("不正な値です")
             }
         }
         alert.addAction(addPassive)
@@ -349,13 +349,13 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
                 ppt = Int(Double(ppt) * self.pptMultiplier)
                 UserDefaults.standard.set(ppt, forKey: "poolingPoint")
                 UserDefaults.standard.set(migrateCount-1, forKey: "migrateCount")
-                self.showAlert("ppt処理が完了しました。")
+                self.showMessage("ppt処理が完了しました。")
             }
             alert.addAction(okAction)
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
             present(alert, animated: true, completion: nil)
         } else {
-            showAlert("今日はもう実行出来ません")
+            showMessage("今日はもう実行出来ません")
         }
     }
     
@@ -378,8 +378,8 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
         }
     }
     
-    func showAlert(_ message: String){
-        let alert : UIAlertController = UIAlertController(title: "警告", message: message, preferredStyle: .alert)
+    func showMessage(_ message: String){
+        let alert : UIAlertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "はい", style: .default, handler: nil)
         alert.addAction(okAction)
         present(alert, animated: true, completion: nil)

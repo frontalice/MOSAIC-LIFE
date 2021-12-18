@@ -112,6 +112,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
 //            pptMultiplierLabel.text = "1.05"
             pptMultiplierButton.setTitle("1.05", for: .normal)
             settings.set(pptMultiplier, forKey: "pptMultiplier")
+            settings.set(2, forKey: "migrateCount")
             
             // spt関連の処理
             sptCount -= 1
@@ -522,7 +523,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             case 6:
                 if sptCount > 2 {
                     currentSpt = 12000 +
-                                 ( (sptCount-2)/2 + 1) * 3000
+                                 (sptCount-1)/2 * 3000
                 }
                 moneyMultiplier = 5.0;
             case 5: currentSpt = 10000; moneyMultiplier = 4.0;
