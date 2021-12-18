@@ -331,15 +331,6 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         
         userDefaults.register(defaults: ["moneyMultiplier" : 2.0])
         
-        navigationController?.navigationBar.barTintColor = UIColor.systemGreen
-        
-        // iOS15対応（UINavigationBarの背景色が消える）
-//        let appearance = UINavigationBarAppearance()
-//        appearance.configureWithOpaqueBackground()
-//        appearance.backgroundColor = UIColor.systemBackground
-//        navigationController?.navigationBar.standardAppearance = appearance
-//        navigationController?.navigationBar.scrollEdgeAppearance = navigationController?.navigationBar.standardAppearance
-        
         // +とEditボタン追加
         let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
 //        let sortButton: UIBarButtonItem = UIBarButtonItem.init(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(self.sortButtonTapped(_:)))
@@ -405,7 +396,27 @@ class ShopViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     
     override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(false, animated: true)
+        syncBarAppearance(.systemGreen)
         moneyMutiplierButton.title = "x\(userDefaults.double(forKey: "moneyMultiplier"))"
+    }
+    
+    func syncBarAppearance(_ color : UIColor){
+        if #available(iOS 15.0, *) {
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            // NavigationBarの背景色の設定
+            appearance.backgroundColor = color
+            // NavigationBarのタイトルの文字色の設定
+            appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+            self.navigationController?.navigationBar.standardAppearance = appearance
+            self.navigationController?.navigationBar.scrollEdgeAppearance = appearance
+            
+//            let tbAppearance = UIToolbarAppearance()
+//            tbAppearance.configureWithOpaqueBackground()
+//            tbAppearance.backgroundColor = color
+//            self.navigationController?.toolbar.standardAppearance = tbAppearance
+//            self.navigationController?.toolbar.scrollEdgeAppearance = tbAppearance
+        }
     }
     
     // MARK: - バフ関連

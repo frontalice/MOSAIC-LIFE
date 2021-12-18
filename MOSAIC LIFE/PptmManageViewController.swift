@@ -344,9 +344,25 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
         let migrateCount = UserDefaults.standard.integer(forKey: "migrateCount")
         if migrateCount > 0 {
             var ppt = UserDefaults.standard.integer(forKey: "poolingPoint")
-            let alert = UIAlertController(title: nil, message: "ppt処理を実行しますか？\n（今日はあと\(migrateCount)回実行出来ます）\n\(ppt)ppt * \(pptMultiplier) = \(Int(Double(ppt) * self.pptMultiplier))ppt", preferredStyle: .alert)
+            let alert = UIAlertController(title: nil, message: {() -> String in
+                if ppt < 10000 {
+                    return "ppt処理を実行しますか？\n（今日はあと\(migrateCount)回実行出来ます）\n\(ppt)ppt * \(pptMultiplier) = \(Int(Double(ppt) * self.pptMultiplier))ppt"
+                } else {
+                    return "ppt処理を実行しますか？\n（今日はあと\(migrateCount)回実行出来ます）\n *注意: pptが多い為増加値が補正されます。*"
+                }
+            }(), preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default){ (action: UIAlertAction) -> Void in
-                ppt = Int(Double(ppt) * self.pptMultiplier)
+                if ppt > 10000 {
+                    if self.pptMultiplier >= 1.2 {
+                        ppt = Int(Double(ppt) * 1.03)
+                    } else if self.pptMultiplier >= 1.1 {
+                        ppt = Int(Double(ppt) * 1.02)
+                    } else if self.pptMultiplier > 1{
+                        ppt = Int(Double(ppt) * 1.01)
+                    }
+                } else {
+                    ppt = Int(Double(ppt) * self.pptMultiplier)
+                }
                 UserDefaults.standard.set(ppt, forKey: "poolingPoint")
                 UserDefaults.standard.set(migrateCount-1, forKey: "migrateCount")
                 self.showMessage("ppt処理が完了しました。")
@@ -383,6 +399,25 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
         let okAction = UIAlertAction(title: "はい", style: .default, handler: nil)
         alert.addAction(okAction)
         present(alert, animated: true, completion: nil)
+    }
+    
+    func syncBarAppearance(_ color : UIColor){
+        if #available(iOS 15.0, *) {
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            // NavigationBarの背景色の設定
+            appearance.backgroundColor = color
+            // NavigationBarのタイトルの文字色の設定
+            appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+            self.navigationController?.navigationBar.standardAppearance = appearance
+            self.navigationController?.navigationBar.scrollEdgeAppearance = appearance
+            
+//            let tbAppearance = UIToolbarAppearance()
+//            tbAppearance.configureWithOpaqueBackground()
+//            tbAppearance.backgroundColor = color
+//            self.navigationController?.toolbar.standardAppearance = tbAppearance
+//            self.navigationController?.toolbar.scrollEdgeAppearance = tbAppearance
+        }
     }
     // MARK: - Manage Tuple
     
@@ -458,6 +493,7 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
     override func viewWillAppear(_ animated: Bool) {
         
         self.navigationController?.setNavigationBarHidden(false, animated: true)
+        syncBarAppearance(.systemOrange)
         
         pptMultiplier = UserDefaults.standard.double(forKey: "pptMultiplier")
         pptmTF.text = String(pptMultiplier)

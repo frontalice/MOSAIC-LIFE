@@ -14,11 +14,11 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     
     let userDefaults = UserDefaults.standard
     var missionLists: [(missionList: [(mission: String, pt: Int)], listName: String)] = [([("ポイントを獲得", 100)],"TestSection")]
-//    var missionList = [(mission: String, pt: Int)]()
     var exchangedPtHistory = Array<(item:String, pt:Int)>()
     
-    var buffArray: [(buffName: String, magnification: String, category: String, date: Date)] = Array<(String, String, String, Date)>()
+    let modeColors = [UIColor.systemTeal,UIColor.systemOrange,UIColor.systemIndigo,UIColor.systemPurple]
     
+    var buffArray: [(buffName: String, magnification: String, category: String, date: Date)] = Array<(String, String, String, Date)>()
     var isBuffApplicated: Bool = false
     
     //MARK: - TableView関連
@@ -39,14 +39,14 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     
     //セクションヘッダの色
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        view.tintColor = UIColor.systemTeal
+        view.tintColor = modeColors[modeSwitcher.selectedSegmentIndex]
     }
     
     //セルの生成
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .value1, reuseIdentifier: "")
         cell.textLabel?.text = missionLists[indexPath.section].missionList[indexPath.row].mission
-        cell.detailTextLabel?.text = String(missionLists[indexPath.section].missionList[indexPath.row].pt)
+        cell.detailTextLabel?.text = String(missionLists[indexPath.section].missionList[indexPath.row].pt * (modeSwitcher.selectedSegmentIndex+1))
         return cell
     }
     
@@ -95,7 +95,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             let setting = UserDefaults.standard
             var presentPoint: Int = setting.integer(forKey: "storePoints")
             let missionItem: String = missionLists[indexPath.section].missionList[indexPath.row].mission
-            let missionPoint: Int = missionLists[indexPath.section].missionList[indexPath.row].pt
+            let missionPoint: Int = missionLists[indexPath.section].missionList[indexPath.row].pt * (modeSwitcher.selectedSegmentIndex+1)
             
             presentPoint += missionPoint
             setting.set(presentPoint, forKey: "storePoints")
@@ -248,8 +248,9 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 
         // Do any additional setup after loading the view.
         
-        self.navigationController?.setNavigationBarHidden(false, animated: true)
-        navigationController?.navigationBar.barTintColor = UIColor.systemTeal
+        userDefaults.register(defaults: [
+            "modeSwitcher" : 0
+        ])
         
         // +とEditボタン追加
         let addButton: UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(self.plusButtonTapped(_:)))
@@ -298,18 +299,30 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
 
     }
     
-//    override func viewWillAppear(_ animated: Bool) {
-//        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-//        do {
-//            let fetchRequest: NSFetchRequest<MissionData> = MissionData.fetchRequest()
-//            let dataArray = try context.fetch(fetchRequest)
-//            print(dataArray[0].value(forKey: "missionName"))
-//            print(dataArray[0].value(forKey: "pt"))
-//            print(dataArray[0].value(forKey: "category"))
-//        } catch {
-//            print("ないよ")
-//        }
-//    }
+    func syncBarAppearance(_ color : UIColor){
+        if #available(iOS 15.0, *) {
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            // NavigationBarの背景色の設定
+            appearance.backgroundColor = color
+            // NavigationBarのタイトルの文字色の設定
+            appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+            self.navigationController?.navigationBar.standardAppearance = appearance
+            self.navigationController?.navigationBar.scrollEdgeAppearance = appearance
+            
+//            let tbAppearance = UIToolbarAppearance()
+//            tbAppearance.configureWithOpaqueBackground()
+//            tbAppearance.backgroundColor = color
+//            self.navigationController?.toolbar.standardAppearance = tbAppearance
+//            self.navigationController?.toolbar.scrollEdgeAppearance = tbAppearance
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
+        syncBarAppearance(.systemTeal)
+        modeSwitcher.selectedSegmentIndex = userDefaults.integer(forKey: "modeSwitcher")
+    }
     
     func makeRawData() {
         //バフされたptの初期化: Settingバフ
@@ -344,6 +357,8 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
     //MARK: - StoryBoard
     @IBOutlet weak var pointLabel: UIBarLabel!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var modeSwitcher: UISegmentedControl!
+    @IBOutlet weak var missionToolbar: UIToolbar!
     
     //MARK: - UI部品
     //ミッションを追加: alertで入力
@@ -419,6 +434,20 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             self.missionLists.removeLast()
         })
         present(alert, animated: true, completion: nil)
+    }
+    
+    @IBAction func whenModeChanged(_ sender: Any) {
+        syncBarAppearance(modeColors[modeSwitcher.selectedSegmentIndex])
+        missionToolbar.barTintColor = modeColors[modeSwitcher.selectedSegmentIndex]
+        self.navigationController?.navigationBar.barTintColor = modeColors[modeSwitcher.selectedSegmentIndex]
+        self.navigationController?.toolbar.barTintColor = modeColors[modeSwitcher.selectedSegmentIndex]
+        for i in 0..<missionLists.count {
+            for j in 0..<missionLists[i].missionList.count {
+                tableView.cellForRow(at: IndexPath(row: j, section: i))?.detailTextLabel?.text = String(missionLists[i].missionList[j].pt * modeSwitcher.selectedSegmentIndex+1)
+            }
+        }
+        tableView.reloadData()
+        userDefaults.set(modeSwitcher.selectedSegmentIndex, forKey: "modeSwitcher")
     }
     
     //　アラート: エラー表示

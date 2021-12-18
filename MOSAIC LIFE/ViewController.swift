@@ -74,7 +74,10 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
         debugLog.layer.borderWidth = 1.0
         debugLog.layer.borderColor = UIColor.black.cgColor
         
+        effectStack.layer.cornerRadius = 5
+        
 //        self.debugLog.delegate = self -> Storyboardで設定済み
+        
         let effectBtns = [angerEffectBtn, exploreEffectBtn, heartEffectBtn]
         effectsCount = (settings.object(forKey: "effectsCount") as? [[Int]])!
         for i in 0 ... 2 {
@@ -106,8 +109,13 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             dateBorder = reloadDateBorder()
         }
         
+        
         // 日付変更線に関する処理
         if now > dateBorder {
+            
+            var earlyBorder = Calendar.current.date(byAdding: .hour, value: 2, to: dateBorder)
+            earlyBorder = Calendar.current.date(byAdding: .minute, value: 30, to: earlyBorder!)
+            
             // 日付変更線更新
             dateBorder = reloadDateBorder()
             
@@ -120,7 +128,20 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
             if ppt <= 0 { ppt = 0 }
             settings.set(pt - ppt, forKey: "storePoints")
             let pptYesterday = settings.integer(forKey: "poolingPoint")
-            var pptToday = Int(Double(ppt + pptYesterday) * pptMultiplier)
+            var pptToday : Int
+            if pptYesterday > 10000 {
+                if pptMultiplier >= 1.2 {
+                    pptToday = Int(Double(ppt + pptYesterday) * 1.03)
+                } else if pptMultiplier >= 1.1 {
+                    pptToday = Int(Double(ppt + pptYesterday) * 1.02)
+                } else if pptMultiplier > 1{
+                    pptToday = Int(Double(ppt + pptYesterday) * 1.01)
+                } else {
+                    pptToday = ppt + pptYesterday
+                }
+            } else {
+                pptToday = Int(Double(ppt + pptYesterday) * pptMultiplier)
+            }
             if pptToday > 25000 { pptToday = 25000 }
             settings.set(pptToday, forKey: "poolingPoint")
             self.attrText.insert(NSMAttrStr(
@@ -128,10 +149,14 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
                 at: attrText.length
             )
             pptMultiplier = 1.05
-//            pptMultiplierLabel.text = "1.05"
             pptMultiplierButton.setTitle("1.05", for: .normal)
             settings.set(pptMultiplier, forKey: "pptMultiplier")
-            settings.set(2, forKey: "migrateCount")
+            
+            if now < earlyBorder! {
+                settings.set(3, forKey: "migrateCount")
+            } else {
+                settings.set(2, forKey: "migrateCount")
+            }
             
             // spt関連の処理
             sptCount -= 1
@@ -297,7 +322,7 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
                 settings.set(ptPerHourArray, forKey: "ptPerHourArray")
             }
             for i in 0..<gotPointArray.count {
-                let gotPtText = NSMAttrStr(string: "[\(timeString)] +\(gotPointArray[i].pt)pt: \(gotPointArray[i].item)\n")
+                let gotPtText = NSMAttrStr(string: "[\(timeString)] +\(gotPointArray[i].pt)pt【x\(settings.integer(forKey: "modeSwitcher")+1)】: \(gotPointArray[i].item)\n")
                 gotPtText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.blue, range: NSMakeRange(0, gotPtText.length))
                 self.attrText.insert(gotPtText, at: attrText.length)
             }
@@ -336,15 +361,22 @@ class ViewController: UIViewController,UITextFieldDelegate, UITextViewDelegate {
 
     //MARK: - StoryBoard / Parts
     
+    //ptParts
     @IBOutlet weak var pointLabel: UITextField!
+    //pptParts
     @IBOutlet weak var poolingPointLabel: UILabel!
+    @IBOutlet weak var pptMultiplierButton: UIButton!
+    //VCTransitionButtons
     @IBOutlet weak var shopButton: UIButton!
     @IBOutlet weak var missionButton: UIButton!
-    @IBOutlet weak var debugLog: UITextView!
-    @IBOutlet weak var pptMultiplierButton: UIButton!
+    //sptParts
     @IBOutlet weak var currencyButton: UIButton!
     @IBOutlet weak var currentSptLabel: UITextField!
     @IBOutlet weak var addingSptLabel: UITextField!
+    //debugLog
+    @IBOutlet weak var debugLog: UITextView!
+    //effectButtons
+    @IBOutlet weak var effectStack: UIStackView!
     @IBOutlet weak var angerEffectBtn: UIButton!
     @IBOutlet weak var exploreEffectBtn: UIButton!
     @IBOutlet weak var heartEffectBtn: UIButton!

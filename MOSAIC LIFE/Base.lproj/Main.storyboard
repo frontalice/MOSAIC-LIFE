@@ -48,7 +48,7 @@
                                 </constraints>
                             </stackView>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="UHi-9K-fMm">
-                                <rect key="frame" x="20" y="309.5" width="335" height="0.0"/>
+                                <rect key="frame" x="20" y="309.5" width="335" height="192"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="192" id="ckF-H5-ZD4"/>
@@ -186,7 +186,7 @@
                                 </constraints>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="tsL-My-rRV" userLabel="Effect Stack">
-                                <rect key="frame" x="20" y="319.5" width="335" height="80"/>
+                                <rect key="frame" x="20" y="511.5" width="335" height="80"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oNV-h6-DKc">
                                         <rect key="frame" x="0.0" y="0.0" width="108.5" height="80"/>
@@ -261,6 +261,7 @@
                         <outlet property="currencyButton" destination="6aV-md-R0a" id="XDZ-hA-UWn"/>
                         <outlet property="currentSptLabel" destination="luZ-vZ-Q2r" id="f5Z-6k-B7V"/>
                         <outlet property="debugLog" destination="UHi-9K-fMm" id="atT-GK-j4K"/>
+                        <outlet property="effectStack" destination="tsL-My-rRV" id="4EA-7L-EGr"/>
                         <outlet property="heartEffectBtn" destination="c5d-yo-Fh3" id="erC-AV-95B"/>
                         <outlet property="missionButton" destination="MHJ-db-YHW" id="9WW-KL-brQ"/>
                         <outlet property="pointLabel" destination="1Jd-O3-gnV" id="mD7-3e-QvX"/>
@@ -352,6 +353,21 @@
                                 <items>
                                     <barButtonItem width="10" style="plain" systemItem="fixedSpace" id="UV4-GH-hFw"/>
                                     <barButtonItem title="Item" id="IXI-jc-CT3" customClass="UIBarLabel" customModule="MOSAIC_LIFE" customModuleProvider="target"/>
+                                    <barButtonItem style="plain" id="aZO-9T-6TY">
+                                        <segmentedControl key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="wke-Xt-SbE">
+                                            <rect key="frame" x="70.5" y="5.5" width="197" height="33"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <segments>
+                                                <segment title="x1"/>
+                                                <segment title="x2"/>
+                                                <segment title="x3"/>
+                                                <segment title="x4"/>
+                                            </segments>
+                                            <connections>
+                                                <action selector="whenModeChanged:" destination="ynp-vX-lGq" eventType="valueChanged" id="uPb-Mm-gse"/>
+                                            </connections>
+                                        </segmentedControl>
+                                    </barButtonItem>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="pV0-ls-CBK"/>
                                 </items>
                                 <color key="barTintColor" systemColor="systemTealColor"/>
@@ -380,6 +396,8 @@
                     </view>
                     <navigationItem key="navigationItem" title="交換" id="deS-ec-don"/>
                     <connections>
+                        <outlet property="missionToolbar" destination="XUD-TY-MPW" id="LdL-Xp-LtN"/>
+                        <outlet property="modeSwitcher" destination="wke-Xt-SbE" id="bWC-VX-ftD"/>
                         <outlet property="pointLabel" destination="IXI-jc-CT3" id="0ta-Aw-Ofq"/>
                         <outlet property="tableView" destination="7yI-fX-2hT" id="hm0-F1-gbW"/>
                     </connections>
