@@ -8,7 +8,7 @@
 import UIKit
 import CoreData
 
-class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDataSource,UIPickerViewDelegate, UIPickerViewDataSource {
+class MissionViewController: MLBaseViewController,UITableViewDelegate,UITableViewDataSource,UIPickerViewDelegate, UIPickerViewDataSource {
     
     //MARK: - 保存データ関連
     
@@ -107,7 +107,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
             //ライフログを直接更新
             //メイン画面vcにexchangedPtHistoryを渡す
             let nvc = self.navigationController!
-            let vc = nvc.viewControllers[0] as! ViewController
+            let vc = nvc.viewControllers[0] as! MainViewController
             vc.gotPointArray.append((missionItem, missionPoint))
             
             // 切り取り線向け処理
@@ -170,10 +170,10 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                         self.tableView.reloadData()
                         self.saveTableViewData()
                     } else {
-                        self.showAlert("ptに文字を入れるな")
+                        self.showMessage("ptに文字を入れるな")
                     }
                 } else {
-                    self.showAlert("追加に失敗しました")
+                    self.showMessage("追加に失敗しました")
                 }
             }
             
@@ -277,7 +277,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                 
             } else {
                 //保存データが無い場合、アラート表示
-                showAlert("データの読み込みに失敗しています")
+                showMessage("データの読み込みに失敗しています")
             }
         }
         
@@ -423,10 +423,10 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                         self.createCategory(missionText, ptInt)
                     }
                 } else {
-                    self.showAlert("ptに文字を入れるな")
+                    self.showMessage("ptに文字を入れるな")
                 }
             } else {
-                self.showAlert("追加に失敗しました")
+                self.showMessage("追加に失敗しました")
             }
         }
         
@@ -449,14 +449,6 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
         }
         tableView.reloadData()
         userDefaults.set(modeSwitcher.selectedSegmentIndex, forKey: "modeSwitcher")
-    }
-    
-    //　アラート: エラー表示
-    func showAlert(_ message: String){
-        let alert : UIAlertController = UIAlertController(title: "警告", message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "はい", style: .default, handler: nil)
-        alert.addAction(okAction)
-        present(alert, animated: true, completion: nil)
     }
     
     // アラート: カテゴリ作成
@@ -492,7 +484,7 @@ class MissionViewController: UIViewController,UITableViewDelegate,UITableViewDat
                 self.tableView.reloadData()
                 self.saveTableViewData()
             } else {
-                self.showAlert("なんか書いてくれ")
+                self.showMessage("なんか書いてくれ")
             }
         }
         

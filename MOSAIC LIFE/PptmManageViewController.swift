@@ -7,7 +7,7 @@
 
 import UIKit
 
-class PptmManageViewController: UIViewController,UITableViewDelegate,UITableViewDataSource,UITextFieldDelegate {
+class PptmManageViewController: MLBaseViewController,UITableViewDelegate,UITableViewDataSource,UITextFieldDelegate {
     
     @IBOutlet weak var pptmTF: UITextField!
     @IBOutlet weak var passiveTable: UITableView!
@@ -392,13 +392,6 @@ class PptmManageViewController: UIViewController,UITableViewDelegate,UITableView
                 depassiveTable.selectRow(at: IndexPath(row: i, section: 0), animated: false, scrollPosition: .none)
             }
         }
-    }
-    
-    func showMessage(_ message: String){
-        let alert : UIAlertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "はい", style: .default, handler: nil)
-        alert.addAction(okAction)
-        present(alert, animated: true, completion: nil)
     }
     
     func syncBarAppearance(_ color : UIColor){
